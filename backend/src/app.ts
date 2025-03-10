@@ -1,19 +1,22 @@
-import express from "express";
-import cors from "cors";
+import express, { Express, Request, Response } from "express";
+import cookieParser from "cookie-parser";
+import cors from "./config/corsConfig";
 import dotenv from "dotenv";
 
 // Load environment variables
 dotenv.config();
 
-const app = express();
+const app: Express = express();
 
-// Middleware
-app.use(cors());
+// Middleware awal
+app.use(cors);
+app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true}));
 
 // Routes
-app.get("/", (req, res) => {
-  res.json({ message: "API is running..." });
+app.get("/", (req: Request, res: Response) => {
+  res.json({ message: "API is success connected..." });
 });
 
 export default app;
