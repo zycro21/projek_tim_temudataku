@@ -1,0 +1,219 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                Int               @id 
+  email             String            @unique
+  password_hash     String
+  full_name         String
+  phone_number      String?
+  profile_picture   String?
+  city              String?
+  province          String?
+  is_email_verified Boolean           @default(false)
+  registration_date DateTime          @default(now())
+  last_login        DateTime?
+  is_active         Boolean           @default(true)
+  created_at        DateTime          @default(now())
+  updated_at        DateTime?
+  user_roles        UserRole[]
+  mentor_profile    MentorProfile?
+  bookings          Booking[]
+  feedback          Feedback[]
+  notifications     Notification[]
+  user_behavior     UserBehavior[]
+  referral_codes    ReferralCode[]
+  projects          Project[]
+
+  @@map("users")
+}
+
+model Role {
+  id          Int        @id
+  role_name   String     @unique
+  description String?
+  created_at  DateTime   @default(now())
+  user_roles  UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  id           Int      @id
+  user_id      Int
+  role_id      Int
+  assigned_date DateTime @default(now())
+  created_at   DateTime @default(now())
+  user         User     @relation(fields: [user_id], references: [id])
+  role         Role     @relation(fields: [role_id], references: [id])
+
+  @@map("user_roles")
+}
+
+model MentorProfile {
+  id                    Int                @id
+  user_id               Int                @unique
+  expertise             String?
+  bio                   String?
+  experience            String?
+  availability_schedule Json?
+  hourly_rate           Decimal?
+  is_verified           Boolean            @default(false)
+  created_at            DateTime           @default(now())
+  updated_at            DateTime?
+  user                  User               @relation(fields: [user_id], references: [id])
+  mentoring_services    MentoringService[]
+
+  @@map("mentor_profiles")
+}
+
+model MentoringService {
+  id               Int                @id
+  mentor_id        Int
+  service_name     String
+  description      String?
+  price            Decimal
+  service_type     String? // 'one-on-one, group, bootcamp'
+  max_participants Int?
+  duration_minutes Int
+  is_active        Boolean            @default(true)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime?
+  mentor           MentorProfile      @relation(fields: [mentor_id], references: [id])
+  sessions         MentoringSession[]
+
+  @@map("mentoring_services")
+}
+
+model MentoringSession {
+  id           Int              @id
+  service_id   Int
+  start_time   DateTime
+  end_time     DateTime
+  meeting_link String?
+  status       String? // 'scheduled, ongoing, completed, cancelled'
+  notes        String?
+  created_at   DateTime         @default(now())
+  updated_at   DateTime?
+  service      MentoringService @relation(fields: [service_id], references: [id])
+  bookings     Booking[]
+  feedback     Feedback[]
+  projects     Project[]
+
+  @@map("mentoring_sessions")
+}
+
+model Booking {
+  id              Int              @id
+  mentee_id       Int
+  session_id      Int
+  booking_date    DateTime         @default(now())
+  status          String? // 'pending, confirmed, cancelled, completed'
+  special_requests String?
+  created_at      DateTime         @default(now())
+  updated_at      DateTime?
+  mentee          User             @relation(fields: [mentee_id], references: [id])
+  session         MentoringSession @relation(fields: [session_id], references: [id])
+  payments        Payment[]
+
+  @@map("bookings")
+}
+
+model Payment {
+  id              Int      @id
+  booking_id      Int
+  amount          Decimal
+  payment_date    DateTime?
+  payment_method  String? // 'bank_transfer, virtual_account, qris'
+  transaction_id  String?
+  status          String? // 'pending, completed, failed, refunded'
+  created_at      DateTime @default(now())
+  updated_at      DateTime?
+  booking         Booking  @relation(fields: [booking_id], references: [id])
+
+  @@map("payments")
+}
+
+model Feedback {
+  id             Int              @id
+  session_id     Int
+  user_id        Int
+  rating         Int
+  comment        String?
+  submitted_date DateTime         @default(now())
+  created_at     DateTime         @default(now())
+  session        MentoringSession @relation(fields: [session_id], references: [id])
+  user           User             @relation(fields: [user_id], references: [id])
+
+  @@map("feedback")
+}
+
+model Project {
+  id              Int              @id
+  mentee_id       Int
+  session_id      Int
+  title           String
+  description     String?
+  file_path       String?
+  submission_date DateTime?        @default(now())
+  plagiarism_score Decimal?
+  created_at      DateTime         @default(now())
+  updated_at      DateTime?
+  mentee          User             @relation(fields: [mentee_id], references: [id])
+  session         MentoringSession @relation(fields: [session_id], references: [id])
+
+  @@map("projects")
+}
+
+model Notification {
+  id           Int      @id
+  user_id      Int
+  type         String
+  title        String
+  message      String?
+  is_read      Boolean  @default(false)
+  created_date DateTime @default(now())
+  created_at   DateTime @default(now())
+  user         User     @relation(fields: [user_id], references: [id])
+
+  @@map("notifications")
+}
+
+model ReferralCode {
+  id                    Int      @id
+  owner_id              Int
+  code                  String   @unique
+  discount_percentage   Decimal
+  commission_percentage Decimal
+  created_date          DateTime @default(now())
+  expiry_date           DateTime?
+  is_active             Boolean  @default(true)
+  created_at            DateTime @default(now())
+  updated_at            DateTime?
+  owner                 User     @relation(fields: [owner_id], references: [id])
+
+  @@map("referral_codes")
+}
+
+model UserBehavior {
+  id         Int      @id
+  user_id    Int?
+  page_visited String
+  action     String?
+  timestamp  DateTime @default(now())
+  ip_address String?
+  user_agent String?
+  created_at DateTime @default(now())
+  user       User?    @relation(fields: [user_id], references: [id])
+
+  @@map("user_behavior")
+}
