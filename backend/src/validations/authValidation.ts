@@ -1,4 +1,3 @@
-// src/validations/authValidation.ts
 import { body } from 'express-validator';
 
 /**
@@ -58,4 +57,14 @@ export const loginValidation = [
   body('password')
     .notEmpty()
     .withMessage('Password is required'),
+];
+
+/**
+ * Email validation rules for resending verification
+ */
+export const emailValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Please enter a valid email address')
+    .normalizeEmail(),
 ];

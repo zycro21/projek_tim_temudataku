@@ -19,6 +19,8 @@ model User {
   profile_picture   String?
   city              String?
   province          String?
+  verification_token String?          // Token unik untuk verifikasi email
+  verification_token_expires DateTime? // Waktu kedaluwarsa token
   is_email_verified Boolean           @default(false)
   registration_date DateTime          @default(now())
   last_login        DateTime?
