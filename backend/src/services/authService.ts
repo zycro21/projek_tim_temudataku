@@ -1,4 +1,3 @@
-// src/services/authService.ts
 import prisma from '../config/prisma';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -11,6 +10,7 @@ interface RegisterData {
   phone_number?: string;
   city?: string;
   province?: string;
+  role?: string;
 }
 
 interface LoginData {
@@ -30,11 +30,26 @@ export interface AuthResult {
 
 /**
  * Get next available ID for User
+ * Exported to be reused by adminUserService
  */
-async function getNextUserId(): Promise<number> {
+export async function getNextUserId(): Promise<number> {
   // Find the maximum user id
   const result = await prisma.$queryRaw<[{ max: number | null }]>`
     SELECT MAX(id) as max FROM users
+  `;
+  
+  const maxId = result[0]?.max ?? 0;
+  return maxId + 1;
+}
+
+/**
+ * Get next available ID for UserRole
+ * Exported to be reused by adminUserService
+ */
+export async function getNextUserRoleId(): Promise<number> {
+  // Find the maximum user_role id
+  const result = await prisma.$queryRaw<[{ max: number | null }]>`
+    SELECT MAX(id) as max FROM user_roles
   `;
   
   const maxId = result[0]?.max ?? 0;
@@ -134,19 +149,6 @@ export const register = async (data: RegisterData): Promise<AuthResult> => {
 
   return result;
 };
-
-/**
- * Get next available ID for UserRole
- */
-async function getNextUserRoleId(): Promise<number> {
-  // Find the maximum user_role id
-  const result = await prisma.$queryRaw<[{ max: number | null }]>`
-    SELECT MAX(id) as max FROM user_roles
-  `;
-  
-  const maxId = result[0]?.max ?? 0;
-  return maxId + 1;
-}
 
 /**
  * Login user
