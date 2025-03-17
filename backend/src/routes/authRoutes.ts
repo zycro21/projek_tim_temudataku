@@ -2,7 +2,8 @@
 import { Router } from 'express';
 import * as authController from '../controllers/authController';
 import { validate } from '../middlewares/validator';
-import { registerValidation, loginValidation, emailValidation } from '../validations/authValidation';
+import { registerValidation, loginValidation, emailValidation, requestResetValidation, resetPasswordValidation } from '../validations/authValidation';
+import * as authMiddleware from '../middlewares/authMiddleware';
 
 const router = Router();
 
@@ -33,5 +34,26 @@ router.get('/verify-email/:token', authController.verifyEmail);
  * @access Public
  */
 router.post('/resend-verification', validate(emailValidation), authController.resendVerificationEmail);
+
+/**
+ * @route POST /auth/logout
+ * @description Logout user
+ * @access Private
+ */
+router.post('/logout', authMiddleware.authenticate, authController.logout);
+
+/**
+ * @route POST /auth/request-reset
+ * @description Request password reset
+ * @access Public
+ */
+router.post('/request-reset', validate(requestResetValidation), authController.requestPasswordReset);
+
+/**
+ * @route POST /auth/reset-password
+ * @description Reset password with token
+ * @access Public
+ */
+router.post('/reset-password', validate(resetPasswordValidation), authController.resetPassword);
 
 export default router;

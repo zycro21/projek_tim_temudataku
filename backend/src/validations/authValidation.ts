@@ -68,3 +68,36 @@ export const emailValidation = [
     .withMessage('Please enter a valid email address')
     .normalizeEmail(),
 ];
+
+/**
+ * Password reset request validation
+ */
+export const requestResetValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Please enter a valid email address')
+    .normalizeEmail(),
+];
+
+/**
+ * Password reset validation
+ */
+export const resetPasswordValidation = [
+  body('token')
+    .notEmpty()
+    .withMessage('Reset token is required'),
+  
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number'),
+  
+  body('confirmPassword')
+    .custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error('Password confirmation does not match');
+      }
+      return true;
+    }),
+];

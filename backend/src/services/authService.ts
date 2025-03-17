@@ -354,3 +354,136 @@ export const login = async (data: LoginData): Promise<AuthResult> => {
     token
   };
 };
+
+/**
+ * Get next available ID for UserBehavior
+ */
+async function getNextUserBehaviorId(): Promise<number> {
+  // Find the maximum user behavior id
+  const result = await prisma.$queryRaw<[{ max: number | null }]>`
+    SELECT MAX(id) as max FROM user_behavior
+  `;
+  
+  const maxId = result[0]?.max ?? 0;
+  return maxId + 1;
+}
+
+// Logout user
+export const logout = async (
+  userId: number, 
+  ipAddress?: string, 
+  userAgent?: string
+): Promise<void> => {
+  await prisma.userBehavior.create({
+    data: {
+      id: await getNextUserBehaviorId(),
+      user_id: userId,
+      page_visited: '/auth/logout',
+      action: 'LOGOUT',
+      timestamp: new Date(),
+      ip_address: ipAddress,
+      user_agent: userAgent
+    }
+  });
+};
+
+/**
+ * Request password reset
+ */
+export const requestPasswordReset = async (email: string): Promise<void> => {
+  // Find user by email
+  const user = await prisma.user.findUnique({
+    where: { email }
+  });
+
+  // For security reasons, don't reveal if the email exists or not
+  if (!user) {
+    return;
+  }
+
+  // Generate reset token
+  const resetToken = generateVerificationToken();
+  const tokenExpiry = new Date();
+  tokenExpiry.setHours(tokenExpiry.getHours() + 1); // Token valid for 1 hour
+
+  // Update user with reset token
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      verification_token: resetToken,
+      verification_token_expires: tokenExpiry
+    }
+  });
+
+  // Send password reset email
+  await sendPasswordResetEmail(email, resetToken);
+};
+
+/**
+ * Reset password
+ */
+export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+  // Find user with matching token that hasn't expired
+  const user = await prisma.user.findFirst({
+    where: {
+      verification_token: token,
+      verification_token_expires: {
+        gt: new Date() // Token not expired
+      }
+    }
+  });
+
+  if (!user) {
+    throw new BadRequestError('Invalid or expired reset token');
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Update user password and clear token
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password_hash: hashedPassword,
+      verification_token: null,
+      verification_token_expires: null,
+      updated_at: new Date()
+    }
+  });
+};
+
+/**
+ * Send password reset email
+ */
+async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+  const mailOptions = {
+    from: `"Temu Dataku" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
+    to: email,
+    subject: 'Reset Password Anda',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <h2 style="color: #333; text-align: center;">Reset Password Anda</h2>
+        <p style="color: #555; font-size: 16px;">Kami menerima permintaan untuk reset password akun Anda.</p>
+        <p style="color: #555; font-size: 16px;">Silakan klik tombol di bawah ini untuk reset password Anda:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetLink}" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
+        </div>
+        <p style="color: #555; font-size: 16px;">Atau, Anda dapat menyalin dan menempelkan link berikut di browser Anda:</p>
+        <p style="color: #555; font-size: 14px; word-break: break-all;">${resetLink}</p>
+        <p style="color: #555; font-size: 16px;">Link ini akan kedaluwarsa dalam 1 jam.</p>
+        <p style="color: #555; font-size: 16px;">Jika Anda tidak meminta reset password, silakan abaikan email ini.</p>
+        <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+        <p style="color: #999; font-size: 14px; text-align: center;">© ${new Date().getFullYear()} Temu Dataku. Semua hak dilindungi.</p>
+      </div>
+    `,
+  };
+
+  try {
+    await emailTransporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw new Error('Failed to send password reset email');
+  }
+}
