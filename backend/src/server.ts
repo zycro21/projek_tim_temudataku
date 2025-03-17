@@ -1,16 +1,10 @@
 import app from "./app";
-import { Pool } from "pg";
+import pool from "./db";
+import dotenv from "dotenv";
 
-// Konfigurasi koneksi PostgreSQL
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASS,
-  port: Number(process.env.DB_PORT) || 5432,
-});
+dotenv.config({ path: "../.env" });
 
-// Fungsi untuk menghubungkan ke database
+// menghubungkan ke database
 const connectDB = async () => {
   try {
     const client = await pool.connect();
@@ -22,7 +16,7 @@ const connectDB = async () => {
   }
 };
 
-// Fungsi untuk menjalankan server
+// menjalankan server
 const startServer = async () => {
   await connectDB();
 
@@ -32,5 +26,4 @@ const startServer = async () => {
   });
 };
 
-// Jalankan server
 startServer();
