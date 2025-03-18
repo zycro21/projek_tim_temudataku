@@ -20,6 +20,7 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^6.5.0",
+    "@types/joi": "^17.2.2",
     "backend": "file:",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
@@ -29,8 +30,10 @@
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
     "helmet": "^8.0.0",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.0",
     "pg": "^8.13.3"
   },

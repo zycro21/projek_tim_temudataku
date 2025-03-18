@@ -1,6 +1,9 @@
 import { Router } from "express";
 import authRoutes from "./authRoutes";
 import adminUserRoutes from "./adminUserRoutes";
+import userProfileRoutes from "./userProfileRoutes";
+import roleRoutes from "./roleRoutes";
+import userRoleRoutes from "./userRoleRoutes";
 // Import routes lain di sini
 
 const router = Router();
@@ -18,6 +21,9 @@ router.get("/health", (req, res) => {
 // Register route modules
 router.use("/auth", authRoutes);
 router.use('/admin/users', adminUserRoutes);
+router.use('/users', userProfileRoutes);
+router.use('/admin/roles', roleRoutes);
+router.use('/admin/users', userRoleRoutes);
 // Tambahkan routes lain seperti:
 // router.use("/users", userRoutes);
 // router.use("/mentors", mentorRoutes);
