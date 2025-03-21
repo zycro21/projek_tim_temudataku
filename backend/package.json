@@ -12,7 +12,7 @@
     "generate": "npx prisma generate"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed-mentor.ts"
   },
   "keywords": [],
   "author": "",
