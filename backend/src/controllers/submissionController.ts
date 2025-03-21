@@ -4,6 +4,7 @@ import {
   getAllSubmissions,
   updateSubmission,
   deleteSubmission,
+  getSubmissionById,
 } from "../models/submissionModel";
 
 export const createSubmissionHandler = async (req: Request, res: Response) => {
@@ -38,6 +39,23 @@ export const getAllSubmissionsHandler = async (req: Request, res: Response) => {
     } else {
       res.status(500).json({
         message: "An unknown error occurred while fetching submissions.",
+      });
+    }
+  }
+};
+
+export const getSubmissionByIdHandler = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const submission = await getSubmissionById(Number(id));
+    res.status(200).json(submission);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({
+        message: "An unknown error occurred while fetching submission by id.",
       });
     }
   }

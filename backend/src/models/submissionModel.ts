@@ -86,6 +86,27 @@ export const getAllSubmissions = async (filters: any) => {
   }
 };
 
+export const getSubmissionById = async (id: number) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "submissions" WHERE "id" = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error("Submission not found");
+    }
+
+    return result.rows[0];
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error("Error fetching submission by id: " + error.message);
+    } else {
+      throw new Error("An unknown error occurred during submission fetching");
+    }
+  }
+};
+
 export const updateSubmission = async (id: number, updateData: any) => {
   const { status, grade, feedback } = updateData;
 

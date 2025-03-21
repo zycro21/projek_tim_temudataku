@@ -4,6 +4,7 @@ import {
   getAllProjects,
   updateProject,
   deleteProject,
+  getProjectById, // Import fungsi baru
 } from "../models/projectModel";
 
 export const createProjectHandler = async (req: Request, res: Response) => {
@@ -24,16 +25,16 @@ export const createProjectHandler = async (req: Request, res: Response) => {
 };
 
 export const getAllProjectsHandler = async (req: Request, res: Response) => {
-  const filters = req.query; 
+  const filters = req.query;
 
-  const searchQuery = filters.search ? String(filters.search) : "";  // Default pencarian kosong
+  const searchQuery = filters.search ? String(filters.search) : ""; // Default pencarian kosong
 
   try {
     const result = await getAllProjects({ ...filters, search: searchQuery });
 
     res.status(200).json({
       data: result.projects,
-      pagination: result.pagination, 
+      pagination: result.pagination,
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -42,6 +43,23 @@ export const getAllProjectsHandler = async (req: Request, res: Response) => {
       res
         .status(500)
         .json({ message: "An unknown error occurred during project fetching" });
+    }
+  }
+};
+
+export const getProjectByIdHandler = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const project = await getProjectById(Number(id));
+    res.status(200).json(project);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: error.message });
+    } else {
+      res.status(500).json({
+        message: "An unknown error occurred during project fetching by id",
+      });
     }
   }
 };

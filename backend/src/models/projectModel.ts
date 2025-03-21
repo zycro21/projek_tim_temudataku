@@ -1,4 +1,4 @@
-import pool from "../db"; 
+import pool from "../db";
 
 export const createProject = async (projectData: any) => {
   const {
@@ -30,16 +30,15 @@ export const getAllProjects = async (filters: any) => {
   const {
     page = 1,
     limit = 10,
-    sortBy = "id", 
-    order = "asc", 
-    search = "", 
+    sortBy = "id",
+    order = "asc",
+    search = "",
   } = filters;
 
   const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
-  const validOrder = order === "desc" ? "desc" : "asc"; 
+  const validOrder = order === "desc" ? "desc" : "asc";
 
-
-  const validSortColumns = ["id", "title", "created_at", "updated_at"]; 
+  const validSortColumns = ["id", "title", "created_at", "updated_at"];
   if (!validSortColumns.includes(sortBy)) {
     throw new Error(`Invalid column for sorting: ${sortBy}`);
   }
@@ -63,17 +62,38 @@ export const getAllProjects = async (filters: any) => {
     const totalPages = Math.ceil(totalItems / parseInt(limit as string));
 
     return {
-      projects: result.rows, 
+      projects: result.rows,
       pagination: {
-        totalItems, 
-        totalPages, 
-        currentPage: parseInt(page as string), 
-        perPage: parseInt(limit as string), 
+        totalItems,
+        totalPages,
+        currentPage: parseInt(page as string),
+        perPage: parseInt(limit as string),
       },
     };
   } catch (error: unknown) {
     if (error instanceof Error) {
       throw new Error("Error fetching projects: " + error.message);
+    } else {
+      throw new Error("An unknown error occurred during project fetching");
+    }
+  }
+};
+
+export const getProjectById = async (id: number) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM "projects" WHERE "id" = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error("Project not found");
+    }
+
+    return result.rows[0];
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw new Error("Error fetching project by id: " + error.message);
     } else {
       throw new Error("An unknown error occurred during project fetching");
     }
