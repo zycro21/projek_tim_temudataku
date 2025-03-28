@@ -35,6 +35,9 @@ model User {
   user_behavior     UserBehavior[]
   referral_codes    ReferralCode[]
   projects          Project[]
+  course_purchases  CoursePurchase[]
+  course_progress   CourseProgress[]
+  course_reviews    CourseReview[]
 
   @@map("users")
 }
@@ -74,6 +77,7 @@ model MentorProfile {
   updated_at            DateTime?
   user                  User               @relation(fields: [user_id], references: [id])
   mentoring_services    MentoringService[]
+  courses               Course[]
 
   @@map("mentor_profiles")
 }
@@ -86,7 +90,7 @@ model MentoringService {
   price            Decimal
   service_type     String? // 'one-on-one, group, bootcamp'
   max_participants Int?
-  duration_minutes Int
+  duration_days    Int
   is_active        Boolean            @default(true)
   created_at       DateTime           @default(now())
   updated_at       DateTime?
@@ -97,19 +101,20 @@ model MentoringService {
 }
 
 model MentoringSession {
-  id           Int              @id
-  service_id   Int
-  start_time   DateTime
-  end_time     DateTime
-  meeting_link String?
-  status       String? // 'scheduled, ongoing, completed, cancelled'
-  notes        String?
-  created_at   DateTime         @default(now())
-  updated_at   DateTime?
-  service      MentoringService @relation(fields: [service_id], references: [id])
-  bookings     Booking[]
-  feedback     Feedback[]
-  projects     Project[]
+  id              Int              @id
+  service_id      Int
+  start_time      DateTime
+  end_time        DateTime
+  duration_minutes Int
+  meeting_link    String?
+  status          String? // 'scheduled, ongoing, completed, cancelled'
+  notes           String?
+  created_at      DateTime         @default(now())
+  updated_at      DateTime?
+  service         MentoringService @relation(fields: [service_id], references: [id])
+  bookings        Booking[]
+  feedback        Feedback[]
+  projects        Project[]
 
   @@map("mentoring_sessions")
 }
@@ -131,16 +136,19 @@ model Booking {
 }
 
 model Payment {
-  id              Int      @id
-  booking_id      Int
-  amount          Decimal
-  payment_date    DateTime?
-  payment_method  String? // 'bank_transfer, virtual_account, qris'
-  transaction_id  String?
-  status          String? // 'pending, completed, failed, refunded'
-  created_at      DateTime @default(now())
-  updated_at      DateTime?
-  booking         Booking  @relation(fields: [booking_id], references: [id])
+  id                   Int              @id
+  booking_id           Int
+  amount               Decimal
+  payment_date         DateTime?
+  payment_method       String? // 'bank_transfer, virtual_account, qris'
+  transaction_id       String?
+  status               String? // 'pending, completed, failed, refunded'
+  created_at           DateTime         @default(now())
+  updated_at           DateTime?
+  duitku_payment_url   String?
+  duitku_payment_token String?
+  booking              Booking          @relation(fields: [booking_id], references: [id])
+  course_purchases     CoursePurchase[]
 
   @@map("payments")
 }
@@ -191,17 +199,18 @@ model Notification {
 }
 
 model ReferralCode {
-  id                    Int      @id
+  id                    Int              @id
   owner_id              Int
-  code                  String   @unique
+  code                  String           @unique
   discount_percentage   Decimal
   commission_percentage Decimal
-  created_date          DateTime @default(now())
+  created_date          DateTime         @default(now())
   expiry_date           DateTime?
-  is_active             Boolean  @default(true)
-  created_at            DateTime @default(now())
+  is_active             Boolean          @default(true)
+  created_at            DateTime         @default(now())
   updated_at            DateTime?
-  owner                 User     @relation(fields: [owner_id], references: [id])
+  owner                 User             @relation(fields: [owner_id], references: [id])
+  course_purchases      CoursePurchase[]
 
   @@map("referral_codes")
 }
@@ -218,4 +227,108 @@ model UserBehavior {
   user       User?    @relation(fields: [user_id], references: [id])
 
   @@map("user_behavior")
+}
+
+// Tambahan model untuk tabel baru
+
+model Course {
+  id              Int              @id
+  mentor_id       Int
+  title           String
+  description     String?
+  thumbnail_image String?
+  price           Decimal
+  level           String?          // 'beginner, intermediate, advanced'
+  category        String?
+  tags            Json?
+  is_active       Boolean          @default(true)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime?
+  mentor          MentorProfile    @relation(fields: [mentor_id], references: [id])
+  materials       CourseMaterial[]
+  purchases       CoursePurchase[]
+  progress        CourseProgress[]
+  reviews         CourseReview[]
+
+  @@map("courses")
+}
+
+model CourseMaterial {
+  id           Int          @id
+  course_id    Int
+  title        String
+  description  String?
+  order_number Int
+  created_at   DateTime     @default(now())
+  updated_at   DateTime?
+  course       Course       @relation(fields: [course_id], references: [id])
+  files        CourseFile[]
+  progress     CourseProgress[]
+
+  @@map("course_materials")
+}
+
+model CourseFile {
+  id           Int            @id
+  material_id  Int
+  file_name    String
+  file_path    String
+  file_type    String         // 'pptx, pdf, word, ipynb, video, etc'
+  file_size    Int?
+  order_number Int
+  created_at   DateTime       @default(now())
+  updated_at   DateTime?
+  material     CourseMaterial @relation(fields: [material_id], references: [id])
+
+  @@map("course_files")
+}
+
+model CoursePurchase {
+  id              Int          @id
+  user_id         Int
+  course_id       Int
+  purchase_date   DateTime     @default(now())
+  status          String?      // 'pending, completed, cancelled, refunded'
+  payment_id      Int?
+  referral_code_id Int?
+  created_at      DateTime     @default(now())
+  updated_at      DateTime?
+  user            User         @relation(fields: [user_id], references: [id])
+  course          Course       @relation(fields: [course_id], references: [id])
+  payment         Payment?     @relation(fields: [payment_id], references: [id])
+  referral_code   ReferralCode? @relation(fields: [referral_code_id], references: [id])
+
+  @@map("course_purchases")
+}
+
+model CourseProgress {
+  id                Int            @id
+  user_id           Int
+  course_id         Int
+  material_id       Int
+  is_completed      Boolean        @default(false)
+  last_accessed     DateTime?
+  time_spent_seconds Int            @default(0)
+  created_at        DateTime       @default(now())
+  updated_at        DateTime?
+  user              User           @relation(fields: [user_id], references: [id])
+  course            Course         @relation(fields: [course_id], references: [id])
+  material          CourseMaterial @relation(fields: [material_id], references: [id])
+
+  @@map("course_progress")
+}
+
+model CourseReview {
+  id             Int      @id
+  user_id        Int
+  course_id      Int
+  rating         Int
+  comment        String?
+  submitted_date DateTime @default(now())
+  created_at     DateTime @default(now())
+  updated_at     DateTime?
+  user           User     @relation(fields: [user_id], references: [id])
+  course         Course   @relation(fields: [course_id], references: [id])
+
+  @@map("course_reviews")
 }

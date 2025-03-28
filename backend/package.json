@@ -12,7 +12,7 @@
     "generate": "npx prisma generate"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed-mentor.ts"
+    "seed": "ts-node prisma/seed-notification.ts"
   },
   "keywords": [],
   "author": "",
@@ -41,7 +41,7 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
-    "@types/node": "^22.13.10",
+    "@types/node": "^22.13.14",
     "@types/pg": "^8.11.11",
     "@typescript-eslint/eslint-plugin": "^8.26.0",
     "@typescript-eslint/parser": "^8.26.0",

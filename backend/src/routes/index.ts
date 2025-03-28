@@ -5,6 +5,7 @@ import userProfileRoutes from "./userProfileRoutes";
 import roleRoutes from "./roleRoutes";
 import userRoleRoutes from "./userRoleRoutes";
 import mentorProfileRoutes from "./mentorProfileRoutes";
+import notificationRoutes from "./notificationRoutes";
 // Import routes lain di sini
 
 const router = Router();
@@ -26,6 +27,7 @@ router.use('/users', userProfileRoutes);
 router.use('/admin/roles', roleRoutes);
 router.use('/admin/users', userRoleRoutes);
 router.use(mentorProfileRoutes);
+router.use('/notifications', notificationRoutes);
 // Tambahkan routes lain seperti:
 // router.use("/users", userRoutes);
 // router.use("/mentors", mentorRoutes);
