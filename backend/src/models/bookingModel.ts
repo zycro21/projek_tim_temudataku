@@ -21,7 +21,6 @@ export const getBookingById = async (id: number) => {
   return result.rows[0];
 };
 
-// Update booking
 export const updateBooking = async (
   id: number,
   menteeId: number,

@@ -3,7 +3,6 @@ import { Router } from "express";
 
 const router = Router();
 
-// Route untuk mengecek status API
 router.get("/status", (req, res) => {
   res.json({
     status: "success",
@@ -11,7 +10,6 @@ router.get("/status", (req, res) => {
   });
 });
 
-// Route untuk dokumentasi (misalnya bisa diarahkan ke Swagger atau dokumen lainnya)
 router.get("/docs", (req, res) => {
   res.json({
     status: "success",
@@ -19,7 +17,6 @@ router.get("/docs", (req, res) => {
   });
 });
 
-// Route untuk ping API
 router.get("/ping", (req, res) => {
   res.json({
     status: "success",
