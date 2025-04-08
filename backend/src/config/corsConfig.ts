@@ -1,7 +1,7 @@
 import cors from "cors";
 
 const allowedOrigins = [
-    'http://localhost:3000', // isi dengan URL frontend yang akan digunakan
+    'http://localhost:3000', 
 ];
 
 const corsOptions: cors.CorsOptions = {
