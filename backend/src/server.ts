@@ -1,44 +1,64 @@
 import app from "./app";
-import prisma from "./config/prisma";
+import dotenv from "dotenv";
 
-// Fungsi untuk menghubungkan ke database via Prisma
-const connectDB = async () => {
-  try {
-    await prisma.$connect();
-    
-    // Verifikasi koneksi dengan query sederhana
-    await prisma.$queryRaw`SELECT 1+1 AS result`;
-    
-    console.log("🔌 Database connected successfully");
-  } catch (err) {
-    console.error("❌ Database connection error:", err);
-    process.exit(1);
-  }
-};
+// Load environment variables
+dotenv.config({ path: "../.env" });
 
-// Handle unhandled promise rejections
-process.on("unhandledRejection", (err: Error) => {
-  console.error("UNHANDLED REJECTION! 💥 Shutting down...");
-  console.error(err.name, err.message);
-  // Tutup server dengan baik
-  process.exit(1);
-});
+const USE_PRISMA = process.env.USE_PRISMA === "true";
 
-// Handle SIGTERM signal
-process.on("SIGTERM", () => {
-  console.log("👋 SIGTERM RECEIVED. Shutting down gracefully");
-  // Tutup database connection dan server dengan baik
-  prisma.$disconnect().then(() => {
-    process.exit(0);
+if (USE_PRISMA) {
+  // Pakai Prisma
+  import("./config/prisma").then(({ default: prisma }) => {
+    const connectDB = async () => {
+      try {
+        await prisma.$connect();
+        await prisma.$queryRaw`SELECT 1+1 AS result`; // Mengecek koneksi
+        console.log("🔌 Connected to database using Prisma");
+      } catch (err) {
+        console.error("Database connection error (Prisma):", err);
+        process.exit(1);
+      }
+    };
+
+    // Handle unhandled promise rejections
+    process.on("unhandledRejection", (err: Error) => {
+      console.error("UNHANDLED REJECTION! 💥 Shutting down...");
+      console.error(err.name, err.message);
+      // Tutup server dengan baik
+      process.exit(1);
+    });
+
+    process.on("SIGTERM", async () => {
+      console.log("👋 SIGTERM received. Shutting down...");
+      await prisma.$disconnect();
+      process.exit(0);
+    });
+
+    startServer(connectDB);
   });
-});
+} else {
+  // Pakai Pool dari pg (Native Query)
+  import("./db").then(({ default: pool }) => {
+    const connectDB = async () => {
+      try {
+        const client = await pool.connect();
+        console.log("🔌 Connected to database using pg (Pool)");
+        client.release();
+      } catch (err) {
+        console.error("Database connection error (pg):", err);
+        process.exit(1);
+      }
+    };
+
+    startServer(connectDB);
+  });
+}
 
 // Fungsi untuk menjalankan server
-const startServer = async () => {
+const startServer = async (connectDB: () => Promise<void>) => {
   await connectDB();
-  
+
   const PORT = process.env.PORT || 5000;
-  
   app.listen(PORT, () => {
     console.log(`
     🚀 Server is running in ${process.env.NODE_ENV} mode on http://localhost:${PORT}
@@ -46,8 +66,3 @@ const startServer = async () => {
     `);
   });
 };
-
-// Jalankan server
-startServer().catch((err) => {
-  console.error("❌ Failed to start server:", err);
-});
