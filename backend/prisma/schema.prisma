@@ -11,33 +11,36 @@ datasource db {
 }
 
 model User {
-  id                Int               @id 
-  email             String            @unique
-  password_hash     String
-  full_name         String
-  phone_number      String?
-  profile_picture   String?
-  city              String?
-  province          String?
-  verification_token String?          // Token unik untuk verifikasi email
-  verification_token_expires DateTime? // Waktu kedaluwarsa token
-  is_email_verified Boolean           @default(false)
-  registration_date DateTime          @default(now())
-  last_login        DateTime?
-  is_active         Boolean           @default(true)
-  created_at        DateTime          @default(now())
-  updated_at        DateTime?
-  user_roles        UserRole[]
-  mentor_profile    MentorProfile?
-  bookings          Booking[]
-  feedback          Feedback[]
-  notifications     Notification[]
-  user_behavior     UserBehavior[]
-  referral_codes    ReferralCode[]
-  projects          Project[]
-  course_purchases  CoursePurchase[]
-  course_progress   CourseProgress[]
-  course_reviews    CourseReview[]
+  id                          Int                  @id 
+  email                       String               @unique
+  password_hash               String
+  full_name                   String
+  phone_number                String?
+  profile_picture             String?
+  city                        String?
+  province                    String?
+  is_email_verified           Boolean              @default(false)
+  verification_token          String?
+  verification_token_expires  DateTime?
+  registration_date           DateTime             @default(now())
+  last_login                  DateTime?
+  is_active                   Boolean              @default(true)
+  created_at                  DateTime             @default(now())
+  updated_at                  DateTime?
+  user_roles                  UserRole[]
+  mentor_profile              MentorProfile?
+  bookings                    Booking[]
+  feedback                    Feedback[]
+  notifications               Notification[]
+  user_behavior               UserBehavior[]
+  referral_codes              ReferralCode[]
+  referral_usages             ReferralUsage[]
+  projects                    Project[]
+  practice_purchases          PracticePurchase[]
+  practice_progress           PracticeProgress[]
+  practice_reviews            PracticeReview[]
+  certificates                Certificate[]
+  commission_payments         CommissionPayment[]
 
   @@map("users")
 }
@@ -53,13 +56,13 @@ model Role {
 }
 
 model UserRole {
-  id           Int      @id
-  user_id      Int
-  role_id      Int
+  id            Int      @id
+  user_id       Int
+  role_id       Int
   assigned_date DateTime @default(now())
-  created_at   DateTime @default(now())
-  user         User     @relation(fields: [user_id], references: [id])
-  role         Role     @relation(fields: [role_id], references: [id])
+  created_at    DateTime @default(now())
+  user          User     @relation(fields: [user_id], references: [id])
+  role          Role     @relation(fields: [role_id], references: [id])
 
   @@map("user_roles")
 }
@@ -77,7 +80,7 @@ model MentorProfile {
   updated_at            DateTime?
   user                  User               @relation(fields: [user_id], references: [id])
   mentoring_services    MentoringService[]
-  courses               Course[]
+  practices             Practice[]
 
   @@map("mentor_profiles")
 }
@@ -88,7 +91,7 @@ model MentoringService {
   service_name     String
   description      String?
   price            Decimal
-  service_type     String? // 'one-on-one, group, bootcamp'
+  service_type     String?            // 'one-on-one, group, bootcamp, shortclass, live class'
   max_participants Int?
   duration_days    Int
   is_active        Boolean            @default(true)
@@ -96,61 +99,125 @@ model MentoringService {
   updated_at       DateTime?
   mentor           MentorProfile      @relation(fields: [mentor_id], references: [id])
   sessions         MentoringSession[]
+  certificates     Certificate[]
 
   @@map("mentoring_services")
 }
 
 model MentoringSession {
-  id              Int              @id
-  service_id      Int
-  start_time      DateTime
-  end_time        DateTime
+  id               Int              @id
+  service_id       Int
+  start_time       DateTime
+  end_time         DateTime
   duration_minutes Int
-  meeting_link    String?
-  status          String? // 'scheduled, ongoing, completed, cancelled'
-  notes           String?
-  created_at      DateTime         @default(now())
-  updated_at      DateTime?
-  service         MentoringService @relation(fields: [service_id], references: [id])
-  bookings        Booking[]
-  feedback        Feedback[]
-  projects        Project[]
+  meeting_link     String?
+  status           String?          // 'scheduled, ongoing, completed, cancelled'
+  notes            String?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime?
+  service          MentoringService @relation(fields: [service_id], references: [id])
+  bookings         Booking[]
+  feedback         Feedback[]
+  projects         Project[]
 
   @@map("mentoring_sessions")
 }
 
 model Booking {
-  id              Int              @id
-  mentee_id       Int
-  session_id      Int
-  booking_date    DateTime         @default(now())
-  status          String? // 'pending, confirmed, cancelled, completed'
-  special_requests String?
-  created_at      DateTime         @default(now())
-  updated_at      DateTime?
-  mentee          User             @relation(fields: [mentee_id], references: [id])
-  session         MentoringSession @relation(fields: [session_id], references: [id])
-  payments        Payment[]
+  id                Int              @id
+  mentee_id         Int
+  session_id        Int
+  booking_date      DateTime         @default(now())
+  status            String?          // 'pending, confirmed, cancelled, completed'
+  special_requests  String?
+  referral_usage_id Int?
+  created_at        DateTime         @default(now())
+  updated_at        DateTime?
+  mentee            User             @relation(fields: [mentee_id], references: [id])
+  session           MentoringSession @relation(fields: [session_id], references: [id])
+  referral_usage    ReferralUsage?   @relation(fields: [referral_usage_id], references: [id])
+  payments          Payment[]
 
   @@map("bookings")
 }
 
 model Payment {
-  id                   Int              @id
+  id                   Int                @id
   booking_id           Int
   amount               Decimal
   payment_date         DateTime?
-  payment_method       String? // 'bank_transfer, virtual_account, qris'
+  payment_method       String?            // 'bank_transfer, virtual_account, qris'
   transaction_id       String?
-  status               String? // 'pending, completed, failed, refunded'
-  created_at           DateTime         @default(now())
-  updated_at           DateTime?
+  status               String?            // 'pending, completed, failed, refunded'
   duitku_payment_url   String?
   duitku_payment_token String?
-  booking              Booking          @relation(fields: [booking_id], references: [id])
-  course_purchases     CoursePurchase[]
+  created_at           DateTime           @default(now())
+  updated_at           DateTime?
+  booking              Booking            @relation(fields: [booking_id], references: [id])
+  practice_purchases   PracticePurchase[]
 
   @@map("payments")
+}
+
+model ReferralCode {
+  id                    Int                   @id
+  owner_id              Int
+  code                  String                @unique
+  discount_percentage   Decimal
+  commission_percentage Decimal
+  created_date          DateTime              @default(now())
+  expiry_date           DateTime?
+  is_active             Boolean               @default(true)
+  created_at            DateTime              @default(now())
+  updated_at            DateTime?
+  owner                 User                  @relation(fields: [owner_id], references: [id])
+  usages                ReferralUsage[]
+  commissions           ReferralCommission[]
+  commission_payments   CommissionPayment[]
+
+  @@map("referral_codes")
+}
+
+model ReferralUsage {
+  id               Int           @id
+  user_id          Int
+  referral_code_id Int
+  used_at          DateTime      @default(now())
+  context          String?       // 'registration, practice_purchase, mentoring_purchase'
+  created_at       DateTime      @default(now())
+  updated_at       DateTime?
+  user             User          @relation(fields: [user_id], references: [id])
+  referral_code    ReferralCode  @relation(fields: [referral_code_id], references: [id])
+  bookings         Booking[]
+  practice_purchases PracticePurchase[]
+
+  @@map("referral_usages")
+}
+
+model ReferralCommission {
+  id               Int          @id
+  referral_code_id Int
+  transaction_id   String
+  amount           Decimal
+  created_at       DateTime     @default(now())
+  referral_code    ReferralCode @relation(fields: [referral_code_id], references: [id])
+
+  @@map("referral_commissions")
+}
+
+model CommissionPayment {
+  id               Int          @id
+  referral_code_id Int
+  owner_id         Int
+  amount           Decimal
+  transaction_id   String?
+  status           String?      // 'pending, paid, failed'
+  paid_at          DateTime?
+  created_at       DateTime     @default(now())
+  referral_code    ReferralCode @relation(fields: [referral_code_id], references: [id])
+  owner            User         @relation(fields: [owner_id], references: [id])
+
+  @@map("commission_payments")
 }
 
 model Feedback {
@@ -168,18 +235,19 @@ model Feedback {
 }
 
 model Project {
-  id              Int              @id
-  mentee_id       Int
-  session_id      Int
-  title           String
-  description     String?
-  file_path       String?
-  submission_date DateTime?        @default(now())
+  id               Int              @id
+  mentee_id        Int
+  session_id       Int
+  title            String
+  description      String?
+  file_path        String?
+  submission_date  DateTime         @default(now())
   plagiarism_score Decimal?
-  created_at      DateTime         @default(now())
-  updated_at      DateTime?
-  mentee          User             @relation(fields: [mentee_id], references: [id])
-  session         MentoringSession @relation(fields: [session_id], references: [id])
+  nilai            Decimal?
+  created_at       DateTime         @default(now())
+  updated_at       DateTime?
+  mentee           User             @relation(fields: [mentee_id], references: [id])
+  session          MentoringSession @relation(fields: [session_id], references: [id])
 
   @@map("projects")
 }
@@ -198,137 +266,137 @@ model Notification {
   @@map("notifications")
 }
 
-model ReferralCode {
-  id                    Int              @id
-  owner_id              Int
-  code                  String           @unique
-  discount_percentage   Decimal
-  commission_percentage Decimal
-  created_date          DateTime         @default(now())
-  expiry_date           DateTime?
-  is_active             Boolean          @default(true)
-  created_at            DateTime         @default(now())
-  updated_at            DateTime?
-  owner                 User             @relation(fields: [owner_id], references: [id])
-  course_purchases      CoursePurchase[]
-
-  @@map("referral_codes")
-}
-
 model UserBehavior {
-  id         Int      @id
-  user_id    Int?
+  id           Int      @id
+  user_id      Int?
   page_visited String
-  action     String?
-  timestamp  DateTime @default(now())
-  ip_address String?
-  user_agent String?
-  created_at DateTime @default(now())
-  user       User?    @relation(fields: [user_id], references: [id])
+  action       String?
+  timestamp    DateTime @default(now())
+  ip_address   String?
+  user_agent   String?
+  created_at   DateTime @default(now())
+  user         User?    @relation(fields: [user_id], references: [id])
 
   @@map("user_behavior")
 }
 
-// Tambahan model untuk tabel baru
+// Renamed from Course to Practice to match DBML
 
-model Course {
-  id              Int              @id
+model Practice {
+  id              Int                @id
   mentor_id       Int
   title           String
   description     String?
   thumbnail_image String?
   price           Decimal
-  level           String?          // 'beginner, intermediate, advanced'
+  practice_type   String?            // 'Data Analyst, Data Scientist, Machine Learning Engineer, NLP Specialist, Other'
   category        String?
   tags            Json?
-  is_active       Boolean          @default(true)
-  created_at      DateTime         @default(now())
+  is_active       Boolean            @default(true)
+  created_at      DateTime           @default(now())
   updated_at      DateTime?
-  mentor          MentorProfile    @relation(fields: [mentor_id], references: [id])
-  materials       CourseMaterial[]
-  purchases       CoursePurchase[]
-  progress        CourseProgress[]
-  reviews         CourseReview[]
+  mentor          MentorProfile      @relation(fields: [mentor_id], references: [id])
+  materials       PracticeMaterial[]
+  purchases       PracticePurchase[]
+  progress        PracticeProgress[]
+  reviews         PracticeReview[]
 
-  @@map("courses")
+  @@map("practices")
 }
 
-model CourseMaterial {
-  id           Int          @id
-  course_id    Int
+model PracticeMaterial {
+  id           Int               @id
+  practice_id  Int
   title        String
   description  String?
   order_number Int
-  created_at   DateTime     @default(now())
+  created_at   DateTime          @default(now())
   updated_at   DateTime?
-  course       Course       @relation(fields: [course_id], references: [id])
-  files        CourseFile[]
-  progress     CourseProgress[]
+  practice     Practice          @relation(fields: [practice_id], references: [id])
+  files        PracticeFile[]
+  progress     PracticeProgress[]
 
-  @@map("course_materials")
+  @@map("practice_materials")
 }
 
-model CourseFile {
-  id           Int            @id
+model PracticeFile {
+  id           Int              @id
   material_id  Int
   file_name    String
   file_path    String
-  file_type    String         // 'pptx, pdf, word, ipynb, video, etc'
+  file_type    String           // 'pptx, pdf, word, ipynb, video, etc'
   file_size    Int?
   order_number Int
-  created_at   DateTime       @default(now())
+  created_at   DateTime         @default(now())
   updated_at   DateTime?
-  material     CourseMaterial @relation(fields: [material_id], references: [id])
+  material     PracticeMaterial @relation(fields: [material_id], references: [id])
 
-  @@map("course_files")
+  @@map("practice_files")
 }
 
-model CoursePurchase {
-  id              Int          @id
-  user_id         Int
-  course_id       Int
-  purchase_date   DateTime     @default(now())
-  status          String?      // 'pending, completed, cancelled, refunded'
-  payment_id      Int?
-  referral_code_id Int?
-  created_at      DateTime     @default(now())
-  updated_at      DateTime?
-  user            User         @relation(fields: [user_id], references: [id])
-  course          Course       @relation(fields: [course_id], references: [id])
-  payment         Payment?     @relation(fields: [payment_id], references: [id])
-  referral_code   ReferralCode? @relation(fields: [referral_code_id], references: [id])
-
-  @@map("course_purchases")
-}
-
-model CourseProgress {
-  id                Int            @id
+model PracticePurchase {
+  id                Int           @id
   user_id           Int
-  course_id         Int
-  material_id       Int
-  is_completed      Boolean        @default(false)
-  last_accessed     DateTime?
-  time_spent_seconds Int            @default(0)
-  created_at        DateTime       @default(now())
+  practice_id       Int
+  purchase_date     DateTime      @default(now())
+  status            String?       // 'pending, completed, cancelled, refunded'
+  payment_id        Int?
+  referral_usage_id Int?
+  created_at        DateTime      @default(now())
   updated_at        DateTime?
-  user              User           @relation(fields: [user_id], references: [id])
-  course            Course         @relation(fields: [course_id], references: [id])
-  material          CourseMaterial @relation(fields: [material_id], references: [id])
+  user              User          @relation(fields: [user_id], references: [id])
+  practice          Practice      @relation(fields: [practice_id], references: [id])
+  payment           Payment?      @relation(fields: [payment_id], references: [id])
+  referral_usage    ReferralUsage? @relation(fields: [referral_usage_id], references: [id])
 
-  @@map("course_progress")
+  @@map("practice_purchases")
 }
 
-model CourseReview {
-  id             Int      @id
+model PracticeProgress {
+  id                 Int              @id
+  user_id            Int
+  practice_id        Int
+  material_id        Int
+  is_completed       Boolean          @default(false)
+  last_accessed      DateTime?
+  time_spent_seconds Int              @default(0)
+  created_at         DateTime         @default(now())
+  updated_at         DateTime?
+  user               User             @relation(fields: [user_id], references: [id])
+  practice           Practice         @relation(fields: [practice_id], references: [id])
+  material           PracticeMaterial @relation(fields: [material_id], references: [id])
+
+  @@map("practice_progress")
+}
+
+model PracticeReview {
+  id             Int       @id
   user_id        Int
-  course_id      Int
+  practice_id    Int
   rating         Int
   comment        String?
-  submitted_date DateTime @default(now())
-  created_at     DateTime @default(now())
+  submitted_date DateTime  @default(now())
+  created_at     DateTime  @default(now())
   updated_at     DateTime?
-  user           User     @relation(fields: [user_id], references: [id])
-  course         Course   @relation(fields: [course_id], references: [id])
+  user           User      @relation(fields: [user_id], references: [id])
+  practice       Practice  @relation(fields: [practice_id], references: [id])
 
-  @@map("course_reviews")
+  @@map("practice_reviews")
+}
+
+model Certificate {
+  id                Int              @id
+  mentee_id         Int
+  service_id        Int
+  certificate_number String           @unique
+  issue_date        DateTime         @default(now())
+  certificate_path  String?
+  projects_data     Json?            // JSON data containing project details and scores for bootcamp certificates
+  status            String?          // 'generated, sent, viewed'
+  created_at        DateTime         @default(now())
+  updated_at        DateTime?
+  mentee            User             @relation(fields: [mentee_id], references: [id])
+  service           MentoringService @relation(fields: [service_id], references: [id])
+
+  @@map("certificates")
 }

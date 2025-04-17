@@ -9,10 +9,14 @@
     "format": "prettier --write .",
     "clean": "rm -rf dist && tsc",
     "migrate": "npx prisma migrate dev",
-    "generate": "npx prisma generate"
+    "generate": "npx prisma generate",
+    "seed:mentorSession": "ts-node prisma/seed-mentorSession.ts",
+    "seed:mentor": "ts-node prisma/seed-mentor.ts",
+    "seed:mentorService": "ts-node prisma/seed-mentorService.ts",
+    "seed:notification": "ts-node prisma/seed-notification.ts"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed-notification.ts"
+    "seed:notification": "ts-node prisma/seed-notification.ts"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +29,7 @@
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
