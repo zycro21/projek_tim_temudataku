@@ -7,288 +7,431 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model users {
-  id                         Int                @id
-  email                      String             @unique @db.VarChar
-  password_hash              String             @db.VarChar
-  full_name                  String             @db.VarChar
-  phone_number               String?            @db.VarChar
-  profile_picture            String?            @db.VarChar
-  city                       String?            @db.VarChar
-  province                   String?            @db.VarChar
-  is_email_verified          Boolean?           @default(false)
-  verification_token         String?            @db.VarChar
-  verification_token_expires DateTime?          @db.Timestamp(6)
-  registration_date          DateTime?          @default(now()) @db.Timestamp(6)
-  last_login                 DateTime?          @db.Timestamp(6)
-  is_active                  Boolean?           @default(true)
-  created_at                 DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at                 DateTime?          @db.Timestamp(6)
-  bookings                   bookings[]
-  course_progress            course_progress[]
-  course_purchases           course_purchases[]
-  course_reviews             course_reviews[]
-  feedback                   feedback[]
-  mentor_profiles            mentor_profiles?
-  notifications              notifications[]
-  projects                   projects[]
-  referral_codes             referral_codes[]
-  user_behavior              user_behavior[]
-  user_roles                 user_roles[]
+  id                          Int                  @id @default(autoincrement())
+  email                       String               @unique
+  password_hash               String
+  full_name                   String
+  phone_number                String?
+  profile_picture             String?
+  city                        String?
+  province                    String?
+  is_email_verified           Boolean              @default(false)
+  verification_token          String?
+  verification_token_expires  DateTime?
+  registration_date           DateTime             @default(now())
+  last_login                  DateTime?
+  is_active                   Boolean              @default(true)
+  created_at                  DateTime             @default(now())
+  updated_at                  DateTime?
+
+  user_roles                  user_roles[]
+  mentor_profile              mentor_profiles?    
+  bookings                    bookings[]           @relation("bookings_mentee")
+  notifications               notifications[]
+  user_behavior               user_behavior[]
+  referral_codes              referral_codes[]     @relation("referral_codes_owner")
+  referral_usages             referral_usages[]
+  commission_payments         commission_payments[] @relation("commission_payments_owner")
+  practice_purchases          practice_purchases[]
+  practice_progress           practice_progress[]
+  practice_reviews            practice_reviews[]
+  certificates                certificates[]
+  feedbacks                   feedback[]
+  projects                    projects[]
+
+  @@map("users")
 }
+
 
 model roles {
-  id          Int          @id
-  role_name   String       @unique @db.VarChar
+  id          Int           @id @default(autoincrement())
+  role_name   String        @unique
   description String?
-  created_at  DateTime?    @default(now()) @db.Timestamp(6)
+  created_at  DateTime      @default(now())
+
   user_roles  user_roles[]
+
+  @@map("roles")
 }
+
 
 model user_roles {
-  id            Int       @id
-  user_id       Int
-  role_id       Int
-  assigned_date DateTime? @default(now()) @db.Timestamp(6)
-  created_at    DateTime? @default(now()) @db.Timestamp(6)
-  roles         roles     @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users         users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  role_id        Int
+  assigned_date  DateTime @default(now())
+  created_at     DateTime @default(now())
+
+  user           users    @relation(fields: [user_id], references: [id])
+  role           roles    @relation(fields: [role_id], references: [id])
+
+  @@map("user_roles")
 }
 
+
 model mentor_profiles {
-  id                    Int                  @id
-  user_id               Int                  @unique
+  id                    Int                 @id @default(autoincrement())
+  user_id               Int                 @unique
   expertise             String?
   bio                   String?
   experience            String?
-  availability_schedule Json?                @db.Json
-  hourly_rate           Decimal?             @db.Decimal
-  is_verified           Boolean?             @default(false)
-  created_at            DateTime?            @default(now()) @db.Timestamp(6)
-  updated_at            DateTime?            @db.Timestamp(6)
-  courses               courses[]
-  users                 users                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  availability_schedule Json?
+  hourly_rate           Decimal?
+  is_verified           Boolean              @default(false)
+  created_at            DateTime             @default(now())
+  updated_at            DateTime?
+
+  user                  users                @relation(fields: [user_id], references: [id])
   mentoring_services    mentoring_services[]
+  practices             practices[]
+
+  @@map("mentor_profiles")
 }
+
 
 model mentoring_services {
-  id                 Int                  @id
-  mentor_id          Int
-  service_name       String               @db.VarChar
-  description        String?
-  price              Decimal              @db.Decimal
-  service_type       String?              @db.VarChar
-  max_participants   Int?
-  duration_days      Int
-  is_active          Boolean?             @default(true)
-  created_at         DateTime?            @default(now()) @db.Timestamp(6)
-  updated_at         DateTime?            @db.Timestamp(6)
-  mentor_profiles    mentor_profiles      @relation(fields: [mentor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                Int                  @id @default(autoincrement())
+  mentor_id         Int
+  service_name      String
+  description       String?
+  price             Decimal
+  service_type      String?
+  max_participants  Int?
+  duration_days     Int
+  is_active         Boolean              @default(true)
+  created_at        DateTime             @default(now())
+  updated_at        DateTime?
+
+  mentor            mentor_profiles      @relation(fields: [mentor_id], references: [id])
   mentoring_sessions mentoring_sessions[]
+  certificates      certificates[]
+
+  @@map("mentoring_services")
 }
+
 
 model mentoring_sessions {
-  id                 Int                @id
-  service_id         Int
-  start_time         DateTime           @db.Timestamp(6)
-  end_time           DateTime           @db.Timestamp(6)
-  duration_minutes   Int
-  meeting_link       String?            @db.VarChar
-  status             String?            @db.VarChar
-  notes              String?
-  created_at         DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at         DateTime?          @db.Timestamp(6)
-  bookings           bookings[]
-  feedback           feedback[]
-  mentoring_services mentoring_services @relation(fields: [service_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  projects           projects[]
+  id               Int               @id @default(autoincrement())
+  service_id       Int
+  start_time       DateTime
+  end_time         DateTime
+  duration_minutes Int
+  meeting_link     String?
+  status           String?
+  notes            String?
+  created_at       DateTime          @default(now())
+  updated_at       DateTime?
+
+  service          mentoring_services @relation(fields: [service_id], references: [id])
+  bookings         bookings[]
+  feedback         feedback[]
+  projects         projects[]
+
+  @@map("mentoring_sessions")
 }
- 
+
+
 model bookings {
-  id                 Int                @id
-  mentee_id          Int
-  session_id         Int
-  booking_date       DateTime?          @default(now()) @db.Timestamp(6)
-  status             String?            @db.VarChar
-  special_requests   String?
-  created_at         DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at         DateTime?          @db.Timestamp(6)
-  users              users              @relation(fields: [mentee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  mentoring_sessions mentoring_sessions @relation(fields: [session_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  payments           payments[]
+  id                Int                  @id @default(autoincrement())
+  mentee_id         Int
+  session_id        Int
+  booking_date      DateTime             @default(now())
+  status            String?
+  special_requests  String?
+  referral_usage_id Int?
+  created_at        DateTime             @default(now())
+  updated_at        DateTime?
+
+  mentee            users                @relation("bookings_mentee", fields: [mentee_id], references: [id])
+  session           mentoring_sessions   @relation(fields: [session_id], references: [id])
+  referral_usage    referral_usages?     @relation(fields: [referral_usage_id], references: [id])
+  payments          payments[] 
+
+  @@map("bookings")
 }
+
 
 model payments {
-  id               Int                @id
-  booking_id       Int
-  amount           Decimal            @db.Decimal
-  payment_date     DateTime?          @db.Timestamp(6)
-  payment_method   String?            @db.VarChar
-  transaction_id   String?            @db.VarChar
-  status           String?            @db.VarChar
-  created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at       DateTime?          @db.Timestamp(6)
-  course_purchases course_purchases[]
-  bookings         bookings           @relation(fields: [booking_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                 Int                  @id @default(autoincrement())
+  booking_id         Int
+  amount             Decimal
+  payment_date       DateTime?
+  payment_method     String?
+  transaction_id     String?
+  status             String?
+  created_at         DateTime              @default(now())
+  updated_at         DateTime?
+
+  booking            bookings              @relation(fields: [booking_id], references: [id])
+  practice_purchases practice_purchases[]
+
+  @@map("payments")
 }
+
 
 model referral_codes {
-  id                    Int                @id
-  owner_id              Int
-  code                  String             @unique @db.VarChar
-  discount_percentage   Decimal            @db.Decimal
-  commission_percentage Decimal            @db.Decimal
-  created_date          DateTime?          @default(now()) @db.Timestamp(6)
-  expiry_date           DateTime?          @db.Timestamp(6)
-  is_active             Boolean?           @default(true)
-  created_at            DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at            DateTime?          @db.Timestamp(6)
-  course_purchases      course_purchases[]
-  users                 users              @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                   Int                  @id @default(autoincrement())
+  owner_id             Int
+  code                 String               @unique
+  discount_percentage  Decimal
+  commission_percentage Decimal
+  created_date         DateTime              @default(now())
+  expiry_date          DateTime?
+  is_active            Boolean               @default(true)
+  created_at           DateTime              @default(now())
+  updated_at           DateTime?
+
+  owner                users                 @relation("referral_codes_owner", fields: [owner_id], references: [id])
+  referral_usages      referral_usages[]
+  referral_commissions referral_commissions[]
+  commission_payments  commission_payments[]
+
+  @@map("referral_codes")
 }
+
+
+model referral_usages {
+  id                 Int                @id @default(autoincrement())
+  user_id            Int
+  referral_code_id   Int
+  used_at            DateTime            @default(now())
+  context            String?
+  created_at         DateTime            @default(now())
+  updated_at         DateTime?
+
+  user               users               @relation(fields: [user_id], references: [id])
+  referral_code      referral_codes      @relation(fields: [referral_code_id], references: [id])
+  bookings           bookings[]
+  practice_purchases practice_purchases[]
+
+  @@map("referral_usages")
+}
+
+
+model referral_commissions {
+  id               Int                @id @default(autoincrement())
+  referral_code_id Int
+  transaction_id   String
+  amount           Decimal
+  created_at       DateTime            @default(now())
+
+  referral_code    referral_codes      @relation(fields: [referral_code_id], references: [id])
+
+  @@map("referral_commissions")
+}
+
+
+model commission_payments {
+  id               Int        @id @default(autoincrement())
+  referral_code_id Int
+  owner_id         Int
+  amount           Decimal
+  transaction_id   String?
+  status           String?
+  paid_at          DateTime?
+  created_at       DateTime    @default(now())
+
+  referral_code    referral_codes @relation(fields: [referral_code_id], references: [id])
+  owner            users           @relation("commission_payments_owner", fields: [owner_id], references: [id])
+
+  @@map("commission_payments")
+}
+
 
 model feedback {
-  id                 Int                @id
-  session_id         Int
-  user_id            Int
-  rating             Int
-  comment            String?
-  submitted_date     DateTime?          @default(now()) @db.Timestamp(6)
-  created_at         DateTime?          @default(now()) @db.Timestamp(6)
-  mentoring_sessions mentoring_sessions @relation(fields: [session_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users              users              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id              Int       @id @default(autoincrement())
+  session_id      Int
+  user_id         Int
+  rating          Int
+  comment         String?
+  submitted_date  DateTime  @default(now())
+  created_at      DateTime  @default(now())
+
+  session         mentoring_sessions @relation(fields: [session_id], references: [id])
+  user            users              @relation(fields: [user_id], references: [id])
+
+  @@map("feedback")
 }
 
+
 model projects {
-  id                 Int                @id
-  mentee_id          Int
-  session_id         Int
-  title              String             @db.VarChar
-  description        String?
-  file_path          String?            @db.VarChar
-  submission_date    DateTime?          @default(now()) @db.Timestamp(6)
-  plagiarism_score   Decimal?           @db.Decimal
-  created_at         DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at         DateTime?          @db.Timestamp(6)
-  users              users              @relation(fields: [mentee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  mentoring_sessions mentoring_sessions @relation(fields: [session_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                Int         @id @default(autoincrement())
+  mentee_id         Int
+  session_id        Int
+  title             String
+  description       String?
+  file_path         String?
+  submission_date   DateTime    @default(now())
+  plagiarism_score  Decimal?
+  nilai             Decimal?
+  created_at        DateTime    @default(now())
+  updated_at        DateTime?
+
+  mentee            users       @relation(fields: [mentee_id], references: [id])
+  session           mentoring_sessions @relation(fields: [session_id], references: [id])
+
+  @@map("projects")
 }
 
 
 model notifications {
-  id           Int       @id
+  id           Int       @id @default(autoincrement())
   user_id      Int
-  type         String    @db.VarChar
-  title        String    @db.VarChar
+  type         String
+  title        String
   message      String?
-  is_read      Boolean?  @default(false)
-  created_date DateTime? @default(now()) @db.Timestamp(6)
-  created_at   DateTime? @default(now()) @db.Timestamp(6)
-  users        users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
+  is_read      Boolean   @default(false)
+  created_date DateTime  @default(now())
+  created_at   DateTime  @default(now())
 
+  user         users     @relation(fields: [user_id], references: [id])
+}
 
 model user_behavior {
-  id           Int       @id
-  user_id      Int?
-  page_visited String    @db.VarChar
-  action       String?   @db.VarChar
-  timestamp    DateTime? @default(now()) @db.Timestamp(6)
-  ip_address   String?   @db.VarChar
-  user_agent   String?   @db.VarChar
-  created_at   DateTime? @default(now()) @db.Timestamp(6)
-  users        users?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  page_visited  String
+  action        String?
+  timestamp     DateTime   @default(now())
+  ip_address    String?
+  user_agent    String?
+  created_at    DateTime   @default(now())
+
+  user          users?     @relation(fields: [user_id], references: [id])
+
+  @@map("user_behavior")
 }
 
-model courses {
-  id               Int                @id
+
+model practices {
+  id               Int               @id @default(autoincrement())
   mentor_id        Int
-  title            String             @db.VarChar
+  title            String
   description      String?
-  thumbnail_image  String?            @db.VarChar
-  price            Decimal            @db.Decimal
-  level            String?            @db.VarChar
-  category         String?            @db.VarChar
-  tags             Json?              @db.Json
-  is_active        Boolean?           @default(true)
-  created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  updated_at       DateTime?          @db.Timestamp(6)
-  course_materials course_materials[]
-  course_progress  course_progress[]
-  course_purchases course_purchases[]
-  course_reviews   course_reviews[]
-  mentor_profiles  mentor_profiles    @relation(fields: [mentor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
+  thumbnail_image  String?
+  price            Decimal
+  practice_type    String?           // Example: Data Analyst
+  category         String?
+  tags             Json?             // Tags as JSON
+  is_active        Boolean           @default(true)
+  created_at       DateTime          @default(now())
+  updated_at       DateTime?
 
-model course_materials {
-  id              Int               @id
-  course_id       Int
-  title           String            @db.VarChar
-  description     String?
-  order_number    Int
-  created_at      DateTime?         @default(now()) @db.Timestamp(6)
-  updated_at      DateTime?         @db.Timestamp(6)
-  course_files    course_files[]
-  courses         courses           @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  course_progress course_progress[]
-}
+  mentor           mentor_profiles   @relation(fields: [mentor_id], references: [id])
+  materials        practice_materials[]
+  purchases        practice_purchases[]
+  progress         practice_progress[]
+  reviews          practice_reviews[]
 
-model course_files {
-  id               Int              @id
-  material_id      Int
-  file_name        String           @db.VarChar
-  file_path        String           @db.VarChar
-  file_type        String           @db.VarChar
-  file_size        Int?
-  order_number     Int
-  created_at       DateTime?        @default(now()) @db.Timestamp(6)
-  updated_at       DateTime?        @db.Timestamp(6)
-  course_materials course_materials @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model course_purchases {
-  id               Int             @id
-  user_id          Int
-  course_id        Int
-  purchase_date    DateTime?       @default(now()) @db.Timestamp(6)
-  status           String?         @db.VarChar
-  payment_id       Int?
-  referral_code_id Int?
-  created_at       DateTime?       @default(now()) @db.Timestamp(6)
-  updated_at       DateTime?       @db.Timestamp(6)
-  courses          courses         @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  payments         payments?       @relation(fields: [payment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  referral_codes   referral_codes? @relation(fields: [referral_code_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users            users           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  @@map("practices")
 }
 
 
-model course_progress {
-  id                 Int              @id
+model practice_materials {
+  id             Int                @id @default(autoincrement())
+  practice_id    Int
+  title          String
+  description    String?
+  order_number   Int
+  created_at     DateTime           @default(now())
+  updated_at     DateTime?
+
+  practice       practices          @relation(fields: [practice_id], references: [id])
+  files          practice_files[]
+  progress       practice_progress[]
+
+  @@map("practice_materials")
+}
+
+
+model practice_files {
+  id            Int         @id @default(autoincrement())
+  material_id   Int
+  file_name     String
+  file_path     String
+  file_type     String      // pptx, pdf, etc
+  file_size     Int?
+  order_number  Int
+  created_at    DateTime     @default(now())
+  updated_at    DateTime?
+
+  material      practice_materials @relation(fields: [material_id], references: [id])
+
+  @@map("practice_files")
+}
+
+
+model practice_purchases {
+  id                 Int              @id @default(autoincrement())
   user_id            Int
-  course_id          Int
-  material_id        Int
-  is_completed       Boolean?         @default(false)
-  last_accessed      DateTime?        @db.Timestamp(6)
-  time_spent_seconds Int?             @default(0)
-  created_at         DateTime?        @default(now()) @db.Timestamp(6)
-  updated_at         DateTime?        @db.Timestamp(6)
-  courses            courses          @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  course_materials   course_materials @relation(fields: [material_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users              users            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  practice_id        Int
+  purchase_date      DateTime          @default(now())
+  status             String?
+  payment_id         Int?
+  referral_usage_id  Int?
+  created_at         DateTime          @default(now())
+  updated_at         DateTime?
+
+  user               users             @relation(fields: [user_id], references: [id])
+  practice           practices         @relation(fields: [practice_id], references: [id])
+  payment            payments?         @relation(fields: [payment_id], references: [id])
+  referral_usage     referral_usages?  @relation(fields: [referral_usage_id], references: [id])
+
+  @@map("practice_purchases")
 }
 
 
-model course_reviews {
-  id             Int       @id
+model practice_progress {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int
+  practice_id        Int
+  material_id        Int
+  is_completed       Boolean   @default(false)
+  last_accessed      DateTime?
+  time_spent_seconds Int       @default(0)
+  created_at         DateTime  @default(now())
+  updated_at         DateTime?
+
+  user               users     @relation(fields: [user_id], references: [id])
+  practice           practices @relation(fields: [practice_id], references: [id])
+  material           practice_materials @relation(fields: [material_id], references: [id])
+
+  @@map("practice_progress")
+}
+
+
+model practice_reviews {
+  id             Int       @id @default(autoincrement())
   user_id        Int
-  course_id      Int
+  practice_id    Int
   rating         Int
   comment        String?
-  submitted_date DateTime? @default(now()) @db.Timestamp(6)
-  created_at     DateTime? @default(now()) @db.Timestamp(6)
-  updated_at     DateTime? @db.Timestamp(6)
-  courses        courses   @relation(fields: [course_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users          users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  submitted_date DateTime  @default(now())
+  created_at     DateTime  @default(now())
+  updated_at     DateTime?
+
+  user           users     @relation(fields: [user_id], references: [id])
+  practice       practices @relation(fields: [practice_id], references: [id])
+
+  @@map("practice_reviews")
+}
+
+
+model certificates {
+  id               Int       @id @default(autoincrement())
+  mentee_id        Int
+  service_id       Int
+  certificate_number String  @unique
+  issue_date       DateTime  @default(now())
+  certificate_path String?
+  projects_data     Json?
+  status            String?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime?
+
+  mentee           users     @relation(fields: [mentee_id], references: [id])
+  service          mentoring_services @relation(fields: [service_id], references: [id])
+
+  @@map("certificates")
 }

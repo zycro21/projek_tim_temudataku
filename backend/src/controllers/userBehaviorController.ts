@@ -128,3 +128,114 @@ export const getUserBehaviorById = async (req: any, res: any) => {
     }
   }
 };
+
+// Fungsi untuk menghapus aktivitas pengguna berdasarkan ID
+export const deleteUserBehavior = async (req: any, res: any) => {
+  const { id } = req.params; // Ambil ID dari parameter URL
+
+  try {
+    const behavior = await userBehaviorModel.deleteUserBehavior(Number(id));
+    if (!behavior) {
+      return res.status(404).json({
+        message: "User behavior not found",
+      });
+    }
+    res.status(200).json({
+      message: "User behavior deleted successfully",
+      data: behavior,
+    });
+  } catch (error: unknown) {
+    console.error(error);
+
+    if (error instanceof Error) {
+      res.status(500).json({
+        message: "Error deleting user behavior",
+        error: error.message,
+      });
+    } else {
+      res.status(500).json({
+        message: "An unexpected error occurred",
+      });
+    }
+  }
+};
+
+// Fungsi untuk mendapatkan laporan jumlah halaman yang dikunjungi
+export const getPageVisitReport = async (req: any, res: any) => {
+  const { startDate, endDate } = req.query;
+
+  try {
+    const report = await userBehaviorModel.getPageVisitReport(startDate, endDate);
+
+    res.status(200).json({
+      message: "Page visit report fetched successfully",
+      data: report,
+    });
+  } catch (error: unknown) {
+    console.error(error);
+    if (error instanceof Error) {
+      res.status(500).json({
+        message: "Error fetching page visit report",
+        error: error.message,
+      });
+    } else {
+      res.status(500).json({
+        message: "An unexpected error occurred",
+      });
+    }
+  }
+};
+
+// Fungsi untuk mendapatkan laporan tindakan pengguna
+export const getActionReport = async (req: any, res: any) => {
+  const { startDate, endDate } = req.query;
+
+  try {
+    const report = await userBehaviorModel.getActionReport(startDate, endDate);
+
+    res.status(200).json({
+      message: "Action report fetched successfully",
+      data: report,
+    });
+  } catch (error: unknown) {
+    console.error(error);
+    if (error instanceof Error) {
+      res.status(500).json({
+        message: "Error fetching action report",
+        error: error.message,
+      });
+    } else {
+      res.status(500).json({
+        message: "An unexpected error occurred",
+      });
+    }
+  }
+};
+
+// Fungsi untuk mendapatkan laporan aktivitas pengguna berdasarkan waktu
+export const getUserBehaviorByDateReport = async (req: any, res: any) => {
+  const { startDate, endDate, interval = 'day' } = req.query;
+
+  try {
+    const report = await userBehaviorModel.getUserBehaviorByDateReport(startDate, endDate, interval);
+
+    res.status(200).json({
+      message: "User behavior report by date fetched successfully",
+      data: report,
+    });
+  } catch (error: unknown) {
+    console.error(error);
+    if (error instanceof Error) {
+      res.status(500).json({
+        message: "Error fetching user behavior by date report",
+        error: error.message,
+      });
+    } else {
+      res.status(500).json({
+        message: "An unexpected error occurred",
+      });
+    }
+  }
+};
+
+
