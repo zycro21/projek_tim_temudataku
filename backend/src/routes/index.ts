@@ -8,6 +8,7 @@ import mentorProfileRoutes from "./mentorProfileRoutes";
 import notificationRoutes from "./notificationRoutes";
 import mentorServiceRoutes from "./mentorServiceRoutes";
 import mentorSessionRoutes from "./mentorSessionRoutes";
+import feedbackRoutes from "./feedbackRoutes";
 // Import routes lain di sini
 
 const router = Router();
@@ -32,9 +33,7 @@ router.use(mentorProfileRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/mentoring-services', mentorServiceRoutes);
 router.use('/mentoring-sessions', mentorSessionRoutes);
-// Tambahkan routes lain seperti:
-// router.use("/users", userRoutes);
-// router.use("/mentors", mentorRoutes);
-// router.use("/services", serviceRoutes);
+router.use('/feedback', feedbackRoutes); 
+
 
 export default router;

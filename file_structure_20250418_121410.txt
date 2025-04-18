@@ -1,0 +1,121 @@
+Directory Structure for: e:\project\temu-dataku-project\projek_tim_temudataku
+Scanned on: 2025-04-18 12:14:10
+==================================================
+
+📁 backend/
+    📁 prisma/
+        📁 migrations/
+            📁 20250312070322_init/
+                📄 migration.sql (9.2 KB)
+            📁 20250312070837_init/
+                📄 migration.sql (12.1 KB)
+            📁 20250313135803_init/
+                📄 migration.sql (134.0 B)
+            📁 20250327085202_update_feedback_id/
+                📄 migration.sql (185.0 B)
+            📁 20250327091133_restart/
+                📄 migration.sql (102.0 B)
+            📁 20250328142653_update/
+                📄 migration.sql (5.4 KB)
+            📁 20250328143117_update/
+                📄 migration.sql (123.0 B)
+            📁 20250416010014_update/
+                📄 migration.sql (10.5 KB)
+            📄 migration_lock.toml (128.0 B)
+        📄 schema.prisma (13.5 KB)
+        📄 seed-mentor.ts (5.2 KB)
+        📄 seed-mentorService.ts (5.1 KB)
+        📄 seed-mentorSession.ts (4.6 KB)
+        📄 seed-notification.ts (4.3 KB)
+        📄 seed.ts (1.8 KB)
+    📁 src/
+        📁 config/
+            📄 corsConfig.ts (1.0 KB)
+            📄 prisma.ts (110.0 B)
+        📁 controllers/
+            📄 adminUserController.ts (2.5 KB)
+            📄 authController.ts (4.0 KB)
+            📄 authRoutes.ts (1.0 KB)
+            📄 mentorProfileController.ts (5.5 KB)
+            📄 mentorServiceController.ts (9.0 KB)
+            📄 mentorSessionController.ts (13.7 KB)
+            📄 notificationController.ts (4.2 KB)
+            📄 roleController.ts (2.6 KB)
+            📄 userProfileController.ts (3.1 KB)
+            📄 userRoleController.ts (2.0 KB)
+        📁 middlewares/
+            📄 authMiddleware.ts (2.5 KB)
+            📄 errorHandler.ts (1.7 KB)
+            📄 validator.ts (1.1 KB)
+        📁 routes/
+            📄 adminUserRoutes.ts (1.3 KB)
+            📄 authRoutes.ts (1.7 KB)
+            📄 index.ts (1.4 KB)
+            📄 mentorProfileRoutes.ts (2.6 KB)
+            📄 mentorServiceRoutes.ts (2.1 KB)
+            📄 mentorSessionRoutes.ts (3.2 KB)
+            📄 notificationRoutes.ts (2.0 KB)
+            📄 roleRoutes.ts (660.0 B)
+            📄 userProfileRoutes.ts (1.7 KB)
+            📄 userRoleRoutes.ts (639.0 B)
+        📁 services/
+            📄 adminUserService.ts (4.8 KB)
+            📄 authService.ts (13.9 KB)
+            📄 emailService.ts (8.1 KB)
+            📄 mentorProfileService.ts (10.2 KB)
+            📄 mentorServiceService.ts (18.2 KB)
+            📄 mentorSessionService.ts (31.9 KB)
+            📄 notificationService.ts (8.0 KB)
+            📄 roleService.ts (2.8 KB)
+            📄 userProfileService.ts (4.1 KB)
+            📄 userRoleService.ts (3.3 KB)
+        📁 types/
+            📄 express.ts (843.0 B)
+        📁 utils/
+            📄 errorTypes.ts (1.4 KB)
+            📄 responseFormatter.ts (1.3 KB)
+        📁 validations/
+            📄 adminUserValidation.ts (1.5 KB)
+            📄 authValidation.ts (2.6 KB)
+            📄 mentorProfileValidation.ts (1.2 KB)
+            📄 mentorServiceValidation.ts (2.9 KB)
+            📄 mentorSessionValidation.ts (9.7 KB)
+            📄 notificationValidation.ts (1.7 KB)
+            📄 roleValidation.ts (673.0 B)
+            📄 userProfileValidation.ts (1.2 KB)
+            📄 userRoleValidation.ts (558.0 B)
+        📄 app.ts (2.7 KB)
+        📄 db.ts (325.0 B)
+        📄 server.ts (1.9 KB)
+    📄 .env (963.0 B)
+    📄 .env.example (985.0 B)
+    📄 .gitignore (239.0 B)
+    📄 package-lock.json (160.8 KB)
+    📄 package.json (1.7 KB)
+    📄 tsconfig.json (471.0 B)
+📁 frontend/
+    📁 public/
+        📄 vite.svg (1.5 KB)
+    📁 src/
+        📁 assets/
+            📄 react.svg (4.0 KB)
+        📁 pages/
+            📄 Home.tsx (279.0 B)
+        📄 App.tsx (283.0 B)
+        📄 index.css (1.2 KB)
+        📄 main.tsx (240.0 B)
+        📄 vite-env.d.ts (39.0 B)
+    📄 .gitignore (277.0 B)
+    📄 eslint.config.js (762.0 B)
+    📄 index.html (379.0 B)
+    📄 package-lock.json (132.0 KB)
+    📄 package.json (1.1 KB)
+    📄 README.md (1.9 KB)
+    📄 tsconfig.app.json (691.0 B)
+    📄 tsconfig.json (126.0 B)
+    📄 tsconfig.node.json (617.0 B)
+    📄 vite.config.ts (232.0 B)
+📄 .gitignore (17.0 B)
+📄 docker-compose.yml (0.0 B)
+📄 file_structure.py (3.6 KB)
+📄 README.md (7.3 KB)

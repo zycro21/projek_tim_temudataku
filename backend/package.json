@@ -13,7 +13,8 @@
     "seed:mentorSession": "ts-node prisma/seed-mentorSession.ts",
     "seed:mentor": "ts-node prisma/seed-mentor.ts",
     "seed:mentorService": "ts-node prisma/seed-mentorService.ts",
-    "seed:notification": "ts-node prisma/seed-notification.ts"
+    "seed:notification": "ts-node prisma/seed-notification.ts",
+    "seed:feedback": "ts-node prisma/seed-feedback.ts"
   },
   "prisma": {
     "seed:notification": "ts-node prisma/seed-notification.ts"
