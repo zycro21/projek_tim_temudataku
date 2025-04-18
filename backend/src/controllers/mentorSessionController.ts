@@ -5,6 +5,209 @@ import { validate } from '../middlewares/validator';
 import * as mentorSessionValidation from '../validations/mentorSessionValidation';
 
 /**
+ * Create multiple sessions at once (batch scheduling)
+ */
+export const createBatchSessions = [
+  validate(mentorSessionValidation.createBatchSessionsSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // Pastikan user telah login
+      if (!req.user) {
+        formatResponse(res, 'User not authenticated', undefined, 401);
+        return;
+      }
+      
+      const { serviceId, sessions } = req.body;
+      
+      // Verify that if user is a mentor, they own the service
+      if (req.user.roles.includes('mentor')) {
+        const isOwner = await mentorSessionService.verifyServiceOwnership(
+          serviceId, 
+          req.user.id
+        );
+        
+        if (!isOwner) {
+          formatResponse(res, 'You do not have permission to create sessions for this service', undefined, 403);
+          return;
+        }
+      }
+      
+      const createdSessions = await mentorSessionService.createBatchSessions(serviceId, sessions);
+      
+      formatResponse(res, 'Batch sessions created successfully', createdSessions, 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+];
+
+/**
+ * Create recurring sessions (weekly, bi-weekly, monthly)
+ */
+export const createRecurringSessions = [
+  validate(mentorSessionValidation.createRecurringSessionsSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // Pastikan user telah login
+      if (!req.user) {
+        formatResponse(res, 'User not authenticated', undefined, 401);
+        return;
+      }
+      
+      const { 
+        serviceId, 
+        startDate, 
+        endDate, 
+        durationMinutes, 
+        daysOfWeek, 
+        startTimes, 
+        recurrencePattern,
+        status,
+        meetingLink,
+        notes 
+      } = req.body;
+      
+      // Verify that if user is a mentor, they own the service
+      if (req.user.roles.includes('mentor')) {
+        const isOwner = await mentorSessionService.verifyServiceOwnership(
+          serviceId, 
+          req.user.id
+        );
+        
+        if (!isOwner) {
+          formatResponse(res, 'You do not have permission to create sessions for this service', undefined, 403);
+          return;
+        }
+      }
+      
+      const createdSessions = await mentorSessionService.createRecurringSessions({
+        serviceId,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        durationMinutes,
+        daysOfWeek,
+        startTimes,
+        recurrencePattern,
+        status: status || 'scheduled',
+        meetingLink,
+        notes
+      });
+      
+      formatResponse(res, 'Recurring sessions created successfully', {
+        totalCreated: createdSessions.length,
+        sessions: createdSessions
+      }, 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+];
+
+/**
+ * Get available time slots for a service
+ */
+export const getAvailableTimeSlots = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { serviceId } = req.params;
+    const { startDate, endDate } = req.query;
+    
+    if (!startDate || !endDate) {
+      formatResponse(res, 'Start date and end date are required', undefined, 400);
+      return;
+    }
+    
+    const availableSlots = await mentorSessionService.getAvailableTimeSlots(
+      Number(serviceId),
+      new Date(startDate as string),
+      new Date(endDate as string)
+    );
+    
+    formatResponse(res, 'Available time slots retrieved successfully', availableSlots);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get sessions for a specific day for a service
+ */
+export const getSessionsByDay = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { serviceId } = req.params;
+    const { date } = req.query;
+    
+    if (!date) {
+      formatResponse(res, 'Date parameter is required', undefined, 400);
+      return;
+    }
+    
+    const sessions = await mentorSessionService.getSessionsByDay(
+      Number(serviceId),
+      new Date(date as string)
+    );
+    
+    formatResponse(res, 'Sessions for the day retrieved successfully', sessions);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Cancel multiple sessions at once
+ */
+export const cancelMultipleSessions = [
+  validate(mentorSessionValidation.cancelMultipleSessionsSchema),
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      // Pastikan user telah login
+      if (!req.user) {
+        formatResponse(res, 'User not authenticated', undefined, 401);
+        return;
+      }
+      
+      const { sessionIds, cancellationReason } = req.body;
+      
+      // Check if user has permission for all sessions
+      for (const sessionId of sessionIds) {
+        const session = await mentorSessionService.getMentoringSessionById(sessionId);
+        
+        if (req.user.roles.includes('mentor') && !req.user.roles.includes('admin')) {
+          const isOwner = await mentorSessionService.verifyServiceOwnership(
+            session.serviceId, 
+            req.user.id
+          );
+          
+          if (!isOwner) {
+            formatResponse(res, `You do not have permission to cancel session #${sessionId}`, undefined, 403);
+            return;
+          }
+        }
+      }
+      
+      const cancelledSessions = await mentorSessionService.cancelMultipleSessions(
+        sessionIds, 
+        cancellationReason
+      );
+      
+      formatResponse(res, 'Sessions cancelled successfully', {
+        totalCancelled: cancelledSessions.length,
+        sessions: cancelledSessions
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+];
+
+/**
  * Get all mentoring sessions with pagination and filters
  */
 export const getAllMentoringSessions = async (

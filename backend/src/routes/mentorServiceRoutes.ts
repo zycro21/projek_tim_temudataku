@@ -5,6 +5,13 @@ import { authenticate, requireRole } from '../middlewares/authMiddleware';
 const router = express.Router();
 
 /**
+ * @route GET /api/mentoring-services/search
+ * @desc Advanced search for mentoring services with multiple filters
+ * @access Public
+ */
+router.get('/search', mentorServiceController.searchMentoringServices);
+
+/**
  * @route GET /api/mentoring-services
  * @desc Get all mentoring services with pagination and filters
  * @access Public

@@ -17,9 +17,59 @@ declare global {
   }
 }
 
-/**
- * Get all mentoring services
- */
+export const searchMentoringServices = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const {
+      search,
+      priceMin,
+      priceMax,
+      serviceType,
+      durationMin,
+      durationMax,
+      mentorId,
+      isActive,
+      sortBy = 'created_at',
+      sortDir = 'desc',
+      page = 1,
+      limit = 10
+    } = req.query;
+    
+    // Construct filters
+    const filters: any = {};
+    
+    if (priceMin) filters.priceMin = Number(priceMin);
+    if (priceMax) filters.priceMax = Number(priceMax);
+    if (serviceType) filters.serviceType = serviceType as string;
+    if (durationMin) filters.durationMin = Number(durationMin);
+    if (durationMax) filters.durationMax = Number(durationMax);
+    if (mentorId) filters.mentorId = Number(mentorId);
+    if (isActive !== undefined) filters.isActive = isActive === 'true';
+    
+    // Sort options
+    const sortOptions = {
+      field: sortBy as string,
+      direction: sortDir as 'asc' | 'desc'
+    };
+    
+    const services = await mentorServiceService.searchMentoringServices(
+      search as string,
+      filters,
+      sortOptions,
+      Number(page),
+      Number(limit)
+    );
+    
+    formatResponse(res, 'Mentoring services retrieved successfully', services);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get all mentoring services (keeping the original method for backward compatibility)
 export const getAllMentoringServices = async (
   req: Request,
   res: Response,
@@ -259,3 +309,4 @@ export const deleteMentoringService = async (
     next(error);
   }
 };
+

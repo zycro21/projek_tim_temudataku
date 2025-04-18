@@ -1,6 +1,44 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import { NotFoundError, BadRequestError, InternalServerError } from '../utils/errorTypes';
 import prisma from '../config/prisma';
+import { 
+  addDays, 
+  addWeeks, 
+  addMonths, 
+  format, 
+  parse, 
+  isBefore, 
+  isAfter, 
+  isEqual, 
+  parseISO, 
+  setHours, 
+  setMinutes,
+  isSameDay,
+  startOfDay,
+  endOfDay
+} from 'date-fns';
+
+export interface BatchSessionInput {
+  startTime: string | Date;
+  endTime: string | Date;
+  durationMinutes?: number;
+  meetingLink?: string;
+  status?: string;
+  notes?: string;
+}
+
+export interface RecurringSessionOptions {
+  serviceId: number;
+  startDate: Date;
+  endDate: Date;
+  durationMinutes: number;
+  daysOfWeek: number[]; // 0 = Sunday, 1 = Monday, etc.
+  startTimes: string[]; // Array of times in format "HH:MM"
+  recurrencePattern: 'weekly' | 'biweekly' | 'monthly';
+  status?: string;
+  meetingLink?: string;
+  notes?: string;
+}
 
 export interface MentoringSessionCreate {
   serviceId: number;
@@ -20,6 +58,497 @@ export interface MentoringSessionUpdate {
   status?: string;
   notes?: string;
 }
+
+export interface SessionResponse {
+  id: number;
+  serviceId: number;
+  startTime: Date;
+  endTime: Date;
+  durationMinutes: number;
+  meetingLink: string | null;
+  status: string | null;
+  notes: string | null;
+  createdAt?: Date;
+  updatedAt?: Date | null;
+}
+
+/**
+ * Create multiple sessions at once (batch scheduling)
+ */
+export const createBatchSessions = async (
+  serviceId: number,
+  sessions: BatchSessionInput[]
+): Promise<SessionResponse[]> => {
+  try {
+    // Check if service exists
+    const service = await prisma.mentoringService.findUnique({
+      where: {
+        id: serviceId,
+      },
+    });
+    
+    if (!service) {
+      throw new NotFoundError('Mentoring service not found');
+    }
+    
+    // Validate each session
+    for (const session of sessions) {
+      const startTime = new Date(session.startTime);
+      const endTime = new Date(session.endTime);
+      
+      validateSessionTime(startTime, endTime);
+      
+      // Check for scheduling conflicts
+      await checkSchedulingConflicts(serviceId, startTime, endTime);
+    }
+    
+    // Create all sessions
+    const createdSessions = [];
+    const baseTimestamp = Math.floor(Date.now() / 1000);
+    
+    for (let i = 0; i < sessions.length; i++) {
+      const session = sessions[i];
+      const startTime = new Date(session.startTime);
+      const endTime = new Date(session.endTime);
+      
+      // Calculate duration if not provided
+      const durationMinutes = session.durationMinutes || calculateDuration(startTime, endTime);
+      
+      // Generate unique ID
+      const sessionId = baseTimestamp + i;
+      
+      const newSession = await prisma.mentoringSession.create({
+        data: {
+          id: sessionId,
+          service_id: serviceId,
+          start_time: startTime,
+          end_time: endTime,
+          duration_minutes: durationMinutes,
+          meeting_link: session.meetingLink,
+          status: session.status || 'scheduled',
+          notes: session.notes,
+        },
+      });
+      
+      const createdSessions: Array<{
+        id: number;
+        serviceId: number;
+        startTime: Date;
+        endTime: Date;
+        durationMinutes: number;
+        meetingLink: string | null;
+        status: string | null;
+        notes: string | null;
+      }> = [];
+    }
+    
+    return createdSessions;
+  } catch (error) {
+    if (error instanceof NotFoundError || error instanceof BadRequestError) {
+      throw error;
+    }
+    throw new InternalServerError('Error creating batch sessions');
+  }
+};
+
+/**
+ * Create recurring sessions
+ */
+export const createRecurringSessions = async (
+  options: RecurringSessionOptions
+): Promise<SessionResponse[]> => {
+  try {
+    // Check if service exists
+    const service = await prisma.mentoringService.findUnique({
+      where: {
+        id: options.serviceId,
+      },
+    });
+    
+    if (!service) {
+      throw new NotFoundError('Mentoring service not found');
+    }
+    
+    // Validate inputs
+    if (isBefore(options.endDate, options.startDate)) {
+      throw new BadRequestError('End date must be after start date');
+    }
+    
+    if (options.durationMinutes < 15 || options.durationMinutes > 480) {
+      throw new BadRequestError('Duration must be between 15 and 480 minutes');
+    }
+    
+    if (options.daysOfWeek.length === 0) {
+      throw new BadRequestError('At least one day of week must be specified');
+    }
+    
+    if (options.startTimes.length === 0) {
+      throw new BadRequestError('At least one start time must be specified');
+    }
+    
+    // Generate sessions
+    const sessions = [];
+    let currentDate = new Date(options.startDate);
+    const baseTimestamp = Math.floor(Date.now() / 1000);
+    let counter = 0;
+    
+    while (isBefore(currentDate, options.endDate) || isEqual(currentDate, options.endDate)) {
+      const dayOfWeek = currentDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      
+      if (options.daysOfWeek.includes(dayOfWeek)) {
+        // Create a session for each start time on this day
+        for (const timeStr of options.startTimes) {
+          // Parse the time string (HH:MM)
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          
+          // Set the start time
+          const startTime = new Date(currentDate);
+          startTime.setHours(hours, minutes, 0, 0);
+          
+          // Skip if the start time is in the past
+          if (isBefore(startTime, new Date())) {
+            continue;
+          }
+          
+          // Calculate end time
+          const endTime = new Date(startTime);
+          endTime.setMinutes(endTime.getMinutes() + options.durationMinutes);
+          
+          // Skip if there's a scheduling conflict
+          try {
+            await checkSchedulingConflicts(options.serviceId, startTime, endTime);
+          } catch (error) {
+            console.log(`Skipping session at ${startTime} due to conflict`);
+            continue;
+          }
+          
+          // Generate unique ID
+          const sessionId = baseTimestamp + counter++;
+          
+          // Create the session
+          const newSession = await prisma.mentoringSession.create({
+            data: {
+              id: sessionId,
+              service_id: options.serviceId,
+              start_time: startTime,
+              end_time: endTime,
+              duration_minutes: options.durationMinutes,
+              meeting_link: options.meetingLink,
+              status: options.status || 'scheduled',
+              notes: options.notes,
+            },
+          });
+          
+          const sessions: Array<{
+            id: number;
+            serviceId: number;
+            startTime: Date;
+            endTime: Date;
+            durationMinutes: number;
+            meetingLink: string | null;
+            status: string | null;
+            notes: string | null;
+          }> = [];
+        }
+      }
+      
+      // Move to the next date based on recurrence pattern
+      if (options.recurrencePattern === 'weekly') {
+        currentDate = addDays(currentDate, 1);
+      } else if (options.recurrencePattern === 'biweekly') {
+        // If it's the last day of the current week, skip to the first day of the week after next
+        if (dayOfWeek === 6) { // Saturday
+          currentDate = addDays(currentDate, 8); // Skip to next Sunday + 7 days
+        } else {
+          currentDate = addDays(currentDate, 1);
+        }
+      } else if (options.recurrencePattern === 'monthly') {
+        // If it's the last day of the month, skip to the first day of the next month
+        const nextDay = addDays(currentDate, 1);
+        if (nextDay.getDate() === 1) {
+          currentDate = nextDay;
+        } else {
+          currentDate = addDays(currentDate, 1);
+        }
+      }
+    }
+    
+    return sessions;
+  } catch (error) {
+    if (error instanceof NotFoundError || error instanceof BadRequestError) {
+      throw error;
+    }
+    throw new InternalServerError('Error creating recurring sessions');
+  }
+};
+
+/**
+ * Get available time slots for a service
+ */
+export const getAvailableTimeSlots = async (
+  serviceId: number,
+  startDate: Date,
+  endDate: Date
+) => {
+  try {
+    // Check if service exists
+    const service = await prisma.mentoringService.findUnique({
+      where: {
+        id: serviceId,
+      },
+    });
+    
+    if (!service) {
+      throw new NotFoundError('Mentoring service not found');
+    }
+    
+    // Get all existing sessions for the service in the date range
+    const existingSessions = await prisma.mentoringSession.findMany({
+      where: {
+        service_id: serviceId,
+        start_time: {
+          gte: startDate,
+          lte: endDate,
+        },
+        status: {
+          in: ['scheduled', 'ongoing'],
+        },
+      },
+      include: {
+        bookings: {
+          select: {
+            id: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: {
+        start_time: 'asc',
+      },
+    });
+    
+    // Format the results by day
+    const availableSlotsByDay = {};
+    let currentDay = new Date(startDate);
+    
+    while (isBefore(currentDay, endDate) || isEqual(currentDay, endDate)) {
+      const dayStr = format(currentDay, 'yyyy-MM-dd');
+      const sessionsForDay = existingSessions.filter(session => 
+        isSameDay(session.start_time, currentDay)
+      );
+      
+      availableSlotsByDay[dayStr] = sessionsForDay.map(session => ({
+        id: session.id,
+        startTime: session.start_time,
+        endTime: session.end_time,
+        durationMinutes: session.duration_minutes,
+        availableSlots: service.max_participants 
+          ? (service.max_participants - session.bookings.filter(b => 
+              b.status === 'confirmed' || b.status === 'pending'
+            ).length)
+          : (service.service_type === 'one-on-one' ? 1 : null),
+        isBooked: session.bookings.some(b => 
+          b.status === 'confirmed' || b.status === 'pending'
+        ),
+        status: session.status,
+      }));
+      
+      currentDay = addDays(currentDay, 1);
+    }
+    
+    return {
+      serviceId,
+      serviceName: service.service_name,
+      serviceType: service.service_type,
+      startDate,
+      endDate,
+      availableSlotsByDay,
+    };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new InternalServerError('Error getting available time slots');
+  }
+};
+
+/**
+ * Get sessions for a specific day
+ */
+export const getSessionsByDay = async (
+  serviceId: number,
+  date: Date
+) => {
+  try {
+    // Get the start and end of the day
+    const dayStart = startOfDay(date);
+    const dayEnd = endOfDay(date);
+    
+    // Get sessions for the day
+    const sessions = await prisma.mentoringSession.findMany({
+      where: {
+        service_id: serviceId,
+        start_time: {
+          gte: dayStart,
+          lte: dayEnd,
+        },
+      },
+      include: {
+        bookings: {
+          include: {
+            mentee: {
+              select: {
+                full_name: true,
+                email: true,
+                profile_picture: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        start_time: 'asc',
+      },
+    });
+    
+    // Get the service details
+    const service = await prisma.mentoringService.findUnique({
+      where: {
+        id: serviceId,
+      },
+      include: {
+        mentor: {
+          include: {
+            user: {
+              select: {
+                full_name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    
+    if (!service) {
+      throw new NotFoundError('Mentoring service not found');
+    }
+    
+    // Format the response
+    return {
+      date: format(date, 'yyyy-MM-dd'),
+      service: {
+        id: service.id,
+        name: service.service_name,
+        type: service.service_type,
+        mentorName: service.mentor.user.full_name,
+        mentorEmail: service.mentor.user.email,
+      },
+      sessions: sessions.map(session => ({
+        id: session.id,
+        startTime: session.start_time,
+        endTime: session.end_time,
+        durationMinutes: session.duration_minutes,
+        meetingLink: session.meeting_link,
+        status: session.status,
+        notes: session.notes,
+        bookings: session.bookings.map(booking => ({
+          id: booking.id,
+          status: booking.status,
+          menteeName: booking.mentee.full_name,
+          menteeEmail: booking.mentee.email,
+          menteePicture: booking.mentee.profile_picture,
+        })),
+      })),
+    };
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new InternalServerError('Error getting sessions by day');
+  }
+};
+
+/**
+ * Cancel multiple sessions at once
+ */
+export const cancelMultipleSessions = async (
+  sessionIds: number[],
+  cancellationReason?: string
+): Promise<SessionResponse[]> => {
+  try {
+    const cancelledSessions = [];
+    
+    // Process each session
+    for (const sessionId of sessionIds) {
+      // Check if session exists
+      const session = await prisma.mentoringSession.findUnique({
+        where: {
+          id: sessionId,
+        },
+        include: {
+          bookings: true,
+        },
+      });
+      
+      if (!session) {
+        throw new NotFoundError(`Session ${sessionId} not found`);
+      }
+      
+      // Check if session can be cancelled (not already completed)
+      if (session.status === 'completed') {
+        throw new BadRequestError(`Session ${sessionId} is already completed and cannot be cancelled`);
+      }
+      
+      // Update session status
+      const updatedSession = await prisma.mentoringSession.update({
+        where: {
+          id: sessionId,
+        },
+        data: {
+          status: 'cancelled',
+          notes: cancellationReason 
+            ? `${session.notes || ''}\nCancellation reason: ${cancellationReason}`
+            : session.notes,
+          updated_at: new Date(),
+        },
+      });
+      
+      // Update associated bookings
+      if (session.bookings.length > 0) {
+        await prisma.booking.updateMany({
+          where: {
+            session_id: sessionId,
+            status: {
+              in: ['pending', 'confirmed'],
+            },
+          },
+          data: {
+            status: 'cancelled',
+            updated_at: new Date(),
+          },
+        });
+      }
+      
+      const cancelledSessions: Array<{
+        id: number;
+        serviceId: number;
+        startTime: Date;
+        endTime: Date;
+        status: string | null;
+        notes: string | null;
+        updatedAt: Date | null;
+      }> = [];
+    }
+    
+    return cancelledSessions;
+  } catch (error) {
+    if (error instanceof NotFoundError || error instanceof BadRequestError) {
+      throw error;
+    }
+    throw new InternalServerError('Error cancelling sessions');
+  }
+};
 
 /**
  * Get all mentoring sessions with pagination and filters
@@ -414,7 +943,9 @@ const checkSchedulingConflicts = async (
 /**
  * Create new mentoring session
  */
-export const createMentoringSession = async (data: MentoringSessionCreate) => {
+export const createMentoringSession = async (
+  data: MentoringSessionCreate
+): Promise<SessionResponse> => {
   try {
     // Check if service exists
     const service = await prisma.mentoringService.findUnique({
