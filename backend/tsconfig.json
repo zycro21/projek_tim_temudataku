@@ -13,7 +13,8 @@
     "noImplicitAny": false,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": ["node_modules/@types", "@types"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

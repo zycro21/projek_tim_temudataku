@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import referralCodeModel from "../models/referralCodeModel";
+import referralCommissionModel from "../models/referralCommissionModel";
 
 // Membuat referral code baru
 export const createReferralCode = async (req: Request, res: Response) => {
-  const { ownerId, discountPercentage, commissionPercentage, expiryDate } = req.body;
+  const { ownerId, discountPercentage, commissionPercentage, expiryDate } =
+    req.body;
 
   try {
     const newReferralCode = await referralCodeModel.createReferralCode(
@@ -24,7 +26,9 @@ export const getReferralCodeById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const referralCode = await referralCodeModel.getReferralCodeById(Number(id));
+    const referralCode = await referralCodeModel.getReferralCodeById(
+      Number(id)
+    );
     if (!referralCode) {
       return res.status(404).json({ message: "Referral code not found" });
     }
@@ -38,7 +42,8 @@ export const getReferralCodeById = async (req: Request, res: Response) => {
 // Mengupdate referral code berdasarkan ID
 export const updateReferralCode = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { ownerId, discountPercentage, commissionPercentage, expiryDate } = req.body;
+  const { ownerId, discountPercentage, commissionPercentage, expiryDate } =
+    req.body;
 
   try {
     const updatedReferralCode = await referralCodeModel.updateReferralCode(
@@ -63,7 +68,9 @@ export const deleteReferralCode = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const deletedReferralCode = await referralCodeModel.deleteReferralCode(Number(id));
+    const deletedReferralCode = await referralCodeModel.deleteReferralCode(
+      Number(id)
+    );
     if (!deletedReferralCode) {
       return res.status(404).json({ message: "Referral code not found" });
     }
@@ -76,7 +83,13 @@ export const deleteReferralCode = async (req: Request, res: Response) => {
 
 // Mendapatkan semua referral codes dengan pagination, sorting, dan pencarian
 export const getAllReferralCodes = async (req: Request, res: Response) => {
-  const { page = 1, limit = 10, sortBy = "id", order = "ASC", search = "" } = req.query;
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "id",
+    order = "ASC",
+    search = "",
+  } = req.query;
 
   try {
     const referralCodes = await referralCodeModel.getAllReferralCodes(
@@ -115,10 +128,8 @@ export const deactivateReferralCode = async (req: Request, res: Response) => {
 
   try {
     // Mengubah status is_active menjadi false untuk menonaktifkan kode referral
-    const updatedReferralCode = await referralCodeModel.updateReferralCodeStatus(
-      Number(id),
-      false
-    );
+    const updatedReferralCode =
+      await referralCodeModel.updateReferralCodeStatus(Number(id), false);
 
     if (!updatedReferralCode) {
       return res.status(404).json({ message: "Referral code not found" });
@@ -142,37 +153,45 @@ export const autoDeactivateExpiredCodes = async () => {
 };
 
 // Memverifikasi penggunaan kode referral pada transaksi
+// Mendapatkan informasi referral code dan memverifikasi transaksi
+
 export const verifyReferralCode = async (req: Request, res: Response) => {
   const { code } = req.params;
+  const { transactionAmount, transactionId } = req.body;  // Amount dan transactionId datang dari body request
 
   try {
-    // Mencari kode referral berdasarkan kode yang diberikan
+    // 1. Verifikasi apakah kode referral valid
     const referralCode = await referralCodeModel.getReferralCodeByCode(code);
 
-    // Jika kode referral tidak ditemukan
     if (!referralCode) {
       return res.status(404).json({ message: "Referral code not found" });
     }
 
-    // Memeriksa apakah kode referral masih aktif
     if (!referralCode.is_active) {
       return res.status(400).json({ message: "Referral code is not active" });
     }
 
-    // Memeriksa apakah kode referral sudah kedaluwarsa
     if (referralCode.expiry_date && new Date(referralCode.expiry_date) < new Date()) {
       return res.status(400).json({ message: "Referral code has expired" });
     }
 
-    // Jika semua pemeriksaan lulus, kode referral valid untuk digunakan
+    // 2. Menghitung komisi berdasarkan transaksi dan persentase komisi dari referralCode
+    const commissionAmount = (transactionAmount * referralCode.commission_percentage) / 100;
+
+    // 3. Membuat entri referral commission
+    await referralCommissionModel.createReferralCommission(
+      referralCode.id,  // referralCodeId
+      transactionId,     // transactionId dari body request
+      commissionAmount   // commissionAmount yang dihitung
+    );
+
     res.status(200).json({
       message: "Referral code is valid",
       discountPercentage: referralCode.discount_percentage,
-      commissionPercentage: referralCode.commission_percentage,
+      commissionAmount,
     });
   } catch (error) {
     console.error("Error verifying referral code:", error);
     res.status(500).json({ message: "Failed to verify referral code" });
   }
 };
-

@@ -13,7 +13,16 @@ import submissionsRoutes from "./routes/submissionRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
 import generalRoutes from "./routes/generalRoutes";
 import userBehaviorRoutes from "./routes/userBehaviorRoutes";
-import referralCodeRoutes from "./routes/referralCodeRoutes"; 
+import referralCodeRoutes from "./routes/referralCodeRoutes";
+import referralCommissionRoutes from "./routes/referralCommissionRoutes";
+import commissionPaymentRoutes from "./routes/commissionPaymentRoutes";
+import practiceRoutes from "./routes/practiceRoutes";
+import practiceMaterialRoutes from "./routes/practiceMaterialRoutes";
+import practiceFileRoutes from "./routes/practiceFileRoutes";
+import practicePurchaseRoutes from "./routes/practicePurchaseRoutes";
+import practiceProgressRoutes from "./routes/practiceProgressRoutes";
+import practiceReviewRoutes from "./routes/practiceReviewRoutes";
+import certificateRoutes from "./routes/certificateRoutes";
 
 dotenv.config();
 
@@ -58,6 +67,16 @@ app.use("/api/submissions", submissionsRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/user-behavior", userBehaviorRoutes);
 app.use("/api/referral-codes", referralCodeRoutes);
+app.use("/api/referral-commissions", referralCommissionRoutes);
+app.use("/api/commission-payments", commissionPaymentRoutes);
+app.use("/api/practices", practiceRoutes);
+app.use("/api/practice-materials", practiceMaterialRoutes);
+app.use("/api/practice-files", practiceFileRoutes);
+app.use("/api/practice-purchases", practicePurchaseRoutes);
+app.use("/api/practice-progress", practiceProgressRoutes);
+app.use("/api/practice-reviews", practiceReviewRoutes);
+app.use("/api/certificates", certificateRoutes);
+
 
 app.all("*", (req: Request, res: Response) => {
   res.status(404).json({
