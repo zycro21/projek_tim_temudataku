@@ -1,4 +1,4 @@
-import express from "express";
+import express, { RequestHandler } from "express";
 import {
   createSessionHandler,
   getSessionsHandler,
@@ -9,10 +9,11 @@ import {
 
 const router = express.Router();
 
-router.post("/sessions", createSessionHandler);
-router.get("/sessions", getSessionsHandler);
-router.get("/sessions/:id", getSessionHandler);
-router.put("/sessions/:id", updateSessionHandler); 
-router.delete("/sessions/:id", deleteSessionHandler);
+// Perbaiki juga struktur path (hilangkan "/sessions" karena sudah ada prefix di app.ts)
+router.post("/", createSessionHandler as RequestHandler);
+router.get("/", getSessionsHandler as RequestHandler);
+router.get("/:id", getSessionHandler as RequestHandler);
+router.put("/:id", updateSessionHandler as RequestHandler); 
+router.delete("/:id", deleteSessionHandler as RequestHandler);
 
 export default router;

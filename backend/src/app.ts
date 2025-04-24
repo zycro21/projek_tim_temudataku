@@ -6,6 +6,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 
+// Import dari struktur KEDUA (main)
 import bookingRoutes from "./routes/bookingRoutes";
 import sessionRoutes from "./routes/sessionRoutes";
 import projectsRoutes from "./routes/projectRoutes";
@@ -24,6 +25,9 @@ import practiceProgressRoutes from "./routes/practiceProgressRoutes";
 import practiceReviewRoutes from "./routes/practiceReviewRoutes";
 import certificateRoutes from "./routes/certificateRoutes";
 
+// Import dari struktur PERTAMA (habdil-temu-dataku)
+import routes from "./routes";
+
 dotenv.config();
 
 const app: Express = express();
@@ -32,8 +36,8 @@ const app: Express = express();
 app.use(helmet());
 app.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
+    windowMs: 15 * 60 * 1000, // 15 menit
+    max: 100, // limit setiap IP ke 100 request per windowMs
     standardHeaders: true,
     legacyHeaders: false,
   })
@@ -45,6 +49,7 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// Logging di development
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -59,9 +64,10 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.use("/api", generalRoutes);
-app.use("/api", bookingRoutes);
-app.use("/api", sessionRoutes);
+// Routes dari KEDUA (main)
+app.use("/api/general", generalRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/sessions", sessionRoutes);
 app.use("/api/projects", projectsRoutes);
 app.use("/api/submissions", submissionsRoutes);
 app.use("/api/payments", paymentRoutes);
@@ -77,7 +83,10 @@ app.use("/api/practice-progress", practiceProgressRoutes);
 app.use("/api/practice-reviews", practiceReviewRoutes);
 app.use("/api/certificates", certificateRoutes);
 
+// Routes dari PERTAMA (habdil-temu-dataku)
+app.use("/api", routes);
 
+// 404 handler
 app.all("*", (req: Request, res: Response) => {
   res.status(404).json({
     status: "error",
@@ -85,11 +94,12 @@ app.all("*", (req: Request, res: Response) => {
   });
 });
 
+// Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Error:", err);
-
+  
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-
+  
   res.status(statusCode).json({
     status: "error",
     message: err.message || "Internal Server Error",
