@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
  * Get all roles
  */
 export const getAllRoles = async () => {
-  return await prisma.role.findMany({
+  return await prisma.roles.findMany({
     orderBy: {
       id: 'asc'
     }
@@ -19,7 +19,7 @@ export const getAllRoles = async () => {
  * Get role by ID
  */
 export const getRoleById = async (roleId: number) => {
-  const role = await prisma.role.findUnique({
+  const role = await prisma.roles.findUnique({
     where: { id: roleId }
   });
 
@@ -35,7 +35,7 @@ export const getRoleById = async (roleId: number) => {
  */
 export const createRole = async (roleData: { role_name: string; description?: string }) => {
   // Check if role name already exists
-  const existingRole = await prisma.role.findUnique({
+  const existingRole = await prisma.roles.findUnique({
     where: { role_name: roleData.role_name }
   });
 
@@ -44,7 +44,7 @@ export const createRole = async (roleData: { role_name: string; description?: st
   }
 
   // Get the max id and increment by 1 for the new role
-  const maxId = await prisma.role.findFirst({
+  const maxId = await prisma.roles.findFirst({
     orderBy: {
       id: 'desc'
     },
@@ -56,7 +56,7 @@ export const createRole = async (roleData: { role_name: string; description?: st
   const newId = maxId ? maxId.id + 1 : 1;
 
   // Create new role
-  return await prisma.role.create({
+  return await prisma.roles.create({
     data: {
       id: newId,
       role_name: roleData.role_name,
@@ -70,7 +70,7 @@ export const createRole = async (roleData: { role_name: string; description?: st
  */
 export const updateRole = async (roleId: number, roleData: { role_name: string; description?: string }) => {
   // Check if role exists
-  const role = await prisma.role.findUnique({
+  const role = await prisma.roles.findUnique({
     where: { id: roleId }
   });
 
@@ -80,7 +80,7 @@ export const updateRole = async (roleId: number, roleData: { role_name: string; 
 
   // Check if role name already exists (except for the current role)
   if (roleData.role_name !== role.role_name) {
-    const existingRole = await prisma.role.findUnique({
+    const existingRole = await prisma.roles.findUnique({
       where: { role_name: roleData.role_name }
     });
 
@@ -90,7 +90,7 @@ export const updateRole = async (roleId: number, roleData: { role_name: string; 
   }
 
   // Update role
-  return await prisma.role.update({
+  return await prisma.roles.update({
     where: { id: roleId },
     data: {
       role_name: roleData.role_name,
@@ -104,7 +104,7 @@ export const updateRole = async (roleId: number, roleData: { role_name: string; 
  */
 export const deleteRole = async (roleId: number) => {
   // Check if role exists
-  const role = await prisma.role.findUnique({
+  const role = await prisma.roles.findUnique({
     where: { id: roleId }
   });
 
@@ -113,7 +113,7 @@ export const deleteRole = async (roleId: number) => {
   }
 
   // Check if role is assigned to any users
-  const userRole = await prisma.userRole.findFirst({
+  const userRole = await prisma.user_roles.findFirst({
     where: { role_id: roleId }
   });
 
@@ -122,7 +122,7 @@ export const deleteRole = async (roleId: number) => {
   }
 
   // Delete role
-  return await prisma.role.delete({
+  return await prisma.roles.delete({
     where: { id: roleId }
   });
 };

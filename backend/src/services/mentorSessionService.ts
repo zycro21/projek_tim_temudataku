@@ -81,7 +81,7 @@ export const createBatchSessions = async (
 ): Promise<SessionResponse[]> => {
   try {
     // Check if service exists
-    const service = await prisma.mentoringService.findUnique({
+    const service = await prisma.mentoring_services.findUnique({
       where: {
         id: serviceId,
       },
@@ -103,7 +103,7 @@ export const createBatchSessions = async (
     }
     
     // Create all sessions
-    const createdSessions = [];
+    const createdSessions: SessionResponse[] = [];
     const baseTimestamp = Math.floor(Date.now() / 1000);
     
     for (let i = 0; i < sessions.length; i++) {
@@ -117,7 +117,7 @@ export const createBatchSessions = async (
       // Generate unique ID
       const sessionId = baseTimestamp + i;
       
-      const newSession = await prisma.mentoringSession.create({
+      const newSession = await prisma.mentoring_sessions.create({
         data: {
           id: sessionId,
           service_id: serviceId,
@@ -130,16 +130,16 @@ export const createBatchSessions = async (
         },
       });
       
-      const createdSessions: Array<{
-        id: number;
-        serviceId: number;
-        startTime: Date;
-        endTime: Date;
-        durationMinutes: number;
-        meetingLink: string | null;
-        status: string | null;
-        notes: string | null;
-      }> = [];
+      createdSessions.push({
+        id: newSession.id,
+        serviceId: newSession.service_id,
+        startTime: newSession.start_time,
+        endTime: newSession.end_time,
+        durationMinutes: newSession.duration_minutes,
+        meetingLink: newSession.meeting_link,
+        status: newSession.status,
+        notes: newSession.notes,
+      });
     }
     
     return createdSessions;
@@ -159,7 +159,7 @@ export const createRecurringSessions = async (
 ): Promise<SessionResponse[]> => {
   try {
     // Check if service exists
-    const service = await prisma.mentoringService.findUnique({
+    const service = await prisma.mentoring_services.findUnique({
       where: {
         id: options.serviceId,
       },
@@ -187,7 +187,7 @@ export const createRecurringSessions = async (
     }
     
     // Generate sessions
-    const sessions = [];
+    const sessions: SessionResponse[] = [];
     let currentDate = new Date(options.startDate);
     const baseTimestamp = Math.floor(Date.now() / 1000);
     let counter = 0;
@@ -226,7 +226,7 @@ export const createRecurringSessions = async (
           const sessionId = baseTimestamp + counter++;
           
           // Create the session
-          const newSession = await prisma.mentoringSession.create({
+          const newSession = await prisma.mentoring_sessions.create({
             data: {
               id: sessionId,
               service_id: options.serviceId,
@@ -239,16 +239,16 @@ export const createRecurringSessions = async (
             },
           });
           
-          const sessions: Array<{
-            id: number;
-            serviceId: number;
-            startTime: Date;
-            endTime: Date;
-            durationMinutes: number;
-            meetingLink: string | null;
-            status: string | null;
-            notes: string | null;
-          }> = [];
+          sessions.push({
+            id: newSession.id,
+            serviceId: newSession.service_id,
+            startTime: newSession.start_time,
+            endTime: newSession.end_time,
+            durationMinutes: newSession.duration_minutes,
+            meetingLink: newSession.meeting_link,
+            status: newSession.status,
+            notes: newSession.notes,
+          });
         }
       }
       
@@ -292,7 +292,7 @@ export const getAvailableTimeSlots = async (
 ) => {
   try {
     // Check if service exists
-    const service = await prisma.mentoringService.findUnique({
+    const service = await prisma.mentoring_services.findUnique({
       where: {
         id: serviceId,
       },
@@ -303,7 +303,7 @@ export const getAvailableTimeSlots = async (
     }
     
     // Get all existing sessions for the service in the date range
-    const existingSessions = await prisma.mentoringSession.findMany({
+    const existingSessions = await prisma.mentoring_sessions.findMany({
       where: {
         service_id: serviceId,
         start_time: {
@@ -385,7 +385,7 @@ export const getSessionsByDay = async (
     const dayEnd = endOfDay(date);
     
     // Get sessions for the day
-    const sessions = await prisma.mentoringSession.findMany({
+    const sessions = await prisma.mentoring_sessions.findMany({
       where: {
         service_id: serviceId,
         start_time: {
@@ -412,7 +412,7 @@ export const getSessionsByDay = async (
     });
     
     // Get the service details
-    const service = await prisma.mentoringService.findUnique({
+    const service = await prisma.mentoring_services.findUnique({
       where: {
         id: serviceId,
       },
@@ -477,12 +477,12 @@ export const cancelMultipleSessions = async (
   cancellationReason?: string
 ): Promise<SessionResponse[]> => {
   try {
-    const cancelledSessions = [];
+    const cancelledSessions: SessionResponse[] = [];
     
     // Process each session
     for (const sessionId of sessionIds) {
       // Check if session exists
-      const session = await prisma.mentoringSession.findUnique({
+      const session = await prisma.mentoring_sessions.findUnique({
         where: {
           id: sessionId,
         },
@@ -501,7 +501,7 @@ export const cancelMultipleSessions = async (
       }
       
       // Update session status
-      const updatedSession = await prisma.mentoringSession.update({
+      const updatedSession = await prisma.mentoring_sessions.update({
         where: {
           id: sessionId,
         },
@@ -516,7 +516,7 @@ export const cancelMultipleSessions = async (
       
       // Update associated bookings
       if (session.bookings.length > 0) {
-        await prisma.booking.updateMany({
+        await prisma.bookings.updateMany({
           where: {
             session_id: sessionId,
             status: {
@@ -530,15 +530,17 @@ export const cancelMultipleSessions = async (
         });
       }
       
-      const cancelledSessions: Array<{
-        id: number;
-        serviceId: number;
-        startTime: Date;
-        endTime: Date;
-        status: string | null;
-        notes: string | null;
-        updatedAt: Date | null;
-      }> = [];
+      cancelledSessions.push({
+        id: updatedSession.id,
+        serviceId: updatedSession.service_id,
+        startTime: updatedSession.start_time,
+        endTime: updatedSession.end_time,
+        durationMinutes: updatedSession.duration_minutes,
+        meetingLink: updatedSession.meeting_link,
+        status: updatedSession.status,
+        notes: updatedSession.notes,
+        updatedAt: updatedSession.updated_at,
+      });
     }
     
     return cancelledSessions;
@@ -562,7 +564,7 @@ export const getAllMentoringSessions = async (
     const skip = (page - 1) * limit;
     
     // Build the where clause
-    const where: Prisma.MentoringSessionWhereInput = {};
+    const where: Prisma.mentoring_sessionsWhereInput = {};
     
     if (filters.status) {
       where.status = filters.status;
@@ -586,10 +588,10 @@ export const getAllMentoringSessions = async (
     }
     
     // Count total records for pagination
-    const total = await prisma.mentoringSession.count({ where });
+    const total = await prisma.mentoring_sessions.count({ where });
     
     // Get sessions with service information
-    const sessions = await prisma.mentoringSession.findMany({
+    const sessions = await prisma.mentoring_sessions.findMany({
       where,
       include: {
         service: {
@@ -651,7 +653,7 @@ export const getAllMentoringSessions = async (
  */
 export const getMentoringSessionById = async (id: number) => {
   try {
-    const session = await prisma.mentoringSession.findUnique({
+    const session = await prisma.mentoring_sessions.findUnique({
       where: {
         id,
       },
@@ -742,7 +744,7 @@ export const getMentoringSessionsByServiceId = async (
     const skip = (page - 1) * limit;
     
     // Build the where clause
-    const where: Prisma.MentoringSessionWhereInput = {
+    const where: Prisma.mentoring_sessionsWhereInput = {
       service_id: serviceId,
     };
     
@@ -751,10 +753,10 @@ export const getMentoringSessionsByServiceId = async (
     }
     
     // Count total records for pagination
-    const total = await prisma.mentoringSession.count({ where });
+    const total = await prisma.mentoring_sessions.count({ where });
     
     // Get sessions
-    const sessions = await prisma.mentoringSession.findMany({
+    const sessions = await prisma.mentoring_sessions.findMany({
       where,
       include: {
         bookings: {
@@ -810,7 +812,7 @@ export const getMentoringSessionsByServiceId = async (
 export const verifyServiceOwnership = async (serviceId: number, userId: number) => {
   try {
     // Get the service with its mentor
-    const service = await prisma.mentoringService.findUnique({
+    const service = await prisma.mentoring_services.findUnique({
       where: {
         id: serviceId,
       },
@@ -824,7 +826,7 @@ export const verifyServiceOwnership = async (serviceId: number, userId: number) 
     }
     
     // Get the mentor profile for the user
-    const mentorProfile = await prisma.mentorProfile.findUnique({
+    const mentorProfile = await prisma.mentor_profiles.findUnique({
       where: {
         user_id: userId,
       },
@@ -849,7 +851,7 @@ export const verifyServiceOwnership = async (serviceId: number, userId: number) 
  */
 export const sessionHasActiveBookings = async (sessionId: number) => {
   try {
-    const bookings = await prisma.booking.findMany({
+    const bookings = await prisma.bookings.findMany({
       where: {
         session_id: sessionId,
         status: {
@@ -905,7 +907,7 @@ const checkSchedulingConflicts = async (
   endTime: Date,
   excludeSessionId?: number
 ) => {
-  const where: Prisma.MentoringSessionWhereInput = {
+  const where: Prisma.mentoring_sessionsWhereInput = {
     service_id: serviceId,
     OR: [
       {
@@ -931,7 +933,7 @@ const checkSchedulingConflicts = async (
     where.id = { not: excludeSessionId };
   }
   
-  const conflictingSessions = await prisma.mentoringSession.findMany({
+  const conflictingSessions = await prisma.mentoring_sessions.findMany({
     where,
   });
   
@@ -948,7 +950,7 @@ export const createMentoringSession = async (
 ): Promise<SessionResponse> => {
   try {
     // Check if service exists
-    const service = await prisma.mentoringService.findUnique({
+    const service = await prisma.mentoring_services.findUnique({
       where: {
         id: data.serviceId,
       },
@@ -968,7 +970,7 @@ export const createMentoringSession = async (
     const newId = Math.floor(Date.now() / 1000);
     
     // Create new session
-    const newSession = await prisma.mentoringSession.create({
+    const newSession = await prisma.mentoring_sessions.create({
       data: {
         id: newId,
         service_id: data.serviceId,
@@ -1009,7 +1011,7 @@ export const updateMentoringSession = async (
 ) => {
   try {
     // Check if session exists
-    const existingSession = await prisma.mentoringSession.findUnique({
+    const existingSession = await prisma.mentoring_sessions.findUnique({
       where: {
         id,
       },
@@ -1044,7 +1046,7 @@ export const updateMentoringSession = async (
     }
     
     // Update session
-    const updatedSession = await prisma.mentoringSession.update({
+    const updatedSession = await prisma.mentoring_sessions.update({
       where: {
         id,
       },
@@ -1078,32 +1080,29 @@ export const updateMentoringSession = async (
   }
 };
 
-/**
- * Update session status
- */
-export const updateSessionStatus = async (id: number, status: string) => {
+export async function updateSessionStatus(sessionId: number, status: string) {
   try {
-    // Check if session exists
-    const existingSession = await prisma.mentoringSession.findUnique({
+    // Periksa apakah sesi ada
+    const existingSession = await prisma.mentoring_sessions.findUnique({
       where: {
-        id,
+        id: sessionId,
       },
     });
     
     if (!existingSession) {
-      throw new NotFoundError('Mentoring session not found');
+      throw new NotFoundError('Sesi mentoring tidak ditemukan');
     }
     
-    // Validate status value
+    // Validasi nilai status
     const validStatuses = ['scheduled', 'ongoing', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) {
-      throw new BadRequestError(`Status must be one of: ${validStatuses.join(', ')}`);
+      throw new BadRequestError(`Status harus salah satu dari: ${validStatuses.join(', ')}`);
     }
     
-    // Update session status
-    const updatedSession = await prisma.mentoringSession.update({
+    // Update status sesi
+    const updatedSession = await prisma.mentoring_sessions.update({
       where: {
-        id,
+        id: sessionId,
       },
       data: {
         status,
@@ -1123,17 +1122,14 @@ export const updateSessionStatus = async (id: number, status: string) => {
     }
     throw new InternalServerError('Error updating session status');
   }
-};
+}
 
-/**
- * Delete mentoring session
- */
-export const deleteMentoringSession = async (id: number) => {
+export async function deleteMentoringSession(sessionId: number) {
   try {
-    // Check if session exists
-    const existingSession = await prisma.mentoringSession.findUnique({
+    // Periksa apakah sesi ada
+    const existingSession = await prisma.mentoring_sessions.findUnique({
       where: {
-        id,
+        id: sessionId,
       },
       include: {
         bookings: true,
@@ -1141,22 +1137,22 @@ export const deleteMentoringSession = async (id: number) => {
     });
     
     if (!existingSession) {
-      throw new NotFoundError('Mentoring session not found');
+      throw new NotFoundError('Sesi mentoring tidak ditemukan');
     }
     
-    // Check if session has active bookings
+    // Periksa apakah sesi memiliki booking aktif
     const hasActiveBookings = existingSession.bookings.some(
       booking => booking.status === 'pending' || booking.status === 'confirmed' || booking.status === 'ongoing'
     );
     
     if (hasActiveBookings) {
-      throw new BadRequestError('Cannot delete a session with active bookings');
+      throw new BadRequestError('Tidak dapat menghapus sesi dengan booking aktif');
     }
     
-    // Delete session
-    await prisma.mentoringSession.delete({
+    // Hapus sesi
+    await prisma.mentoring_sessions.delete({
       where: {
-        id,
+        id: sessionId,
       },
     });
     
@@ -1165,6 +1161,6 @@ export const deleteMentoringSession = async (id: number) => {
     if (error instanceof NotFoundError || error instanceof BadRequestError) {
       throw error;
     }
-    throw new InternalServerError('Error deleting mentoring session');
+    throw new InternalServerError('Error menghapus sesi mentoring');
   }
-};
+}

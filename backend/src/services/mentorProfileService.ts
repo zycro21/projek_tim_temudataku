@@ -21,7 +21,7 @@ export const mentorProfileService = {
       console.log('Creating mentor profile with data:', JSON.stringify(data));
       
       // Check if user exists
-      const user = await prisma.user.findUnique({
+      const user = await prisma.users.findUnique({
         where: { id: data.user_id },
       });
 
@@ -30,7 +30,7 @@ export const mentorProfileService = {
       }
 
       // Check if mentor profile already exists for this user
-      const existingProfile = await prisma.mentorProfile.findUnique({
+      const existingProfile = await prisma.mentor_profiles.findUnique({
         where: { user_id: data.user_id },
       });
 
@@ -47,7 +47,7 @@ export const mentorProfileService = {
         : null;
 
       // Create mentor profile
-      const mentorProfile = await prisma.mentorProfile.create({
+      const mentorProfile = await prisma.mentor_profiles.create({
         data: {
           id: profileId,
           user_id: data.user_id,
@@ -80,7 +80,7 @@ export const mentorProfileService = {
         throw new BadRequestError('Invalid mentor profile ID');
       }
 
-      const mentorProfile = await prisma.mentorProfile.findUnique({
+      const mentorProfile = await prisma.mentor_profiles.findUnique({
         where: { id },
         include: {
           user: {
@@ -119,7 +119,7 @@ export const mentorProfileService = {
         throw new BadRequestError('Invalid user ID');
       }
 
-      const mentorProfile = await prisma.mentorProfile.findUnique({
+      const mentorProfile = await prisma.mentor_profiles.findUnique({
         where: { user_id: userId },
         include: {
           user: {
@@ -168,7 +168,7 @@ export const mentorProfileService = {
       console.log('Using where clause:', whereClause);
 
       const [mentorProfiles, total] = await Promise.all([
-        prisma.mentorProfile.findMany({
+        prisma.mentor_profiles.findMany({
           where: whereClause,
           include: {
             user: {
@@ -186,7 +186,7 @@ export const mentorProfileService = {
           take: limit,
           orderBy: { created_at: 'desc' },
         }),
-        prisma.mentorProfile.count({ where: whereClause }),
+        prisma.mentor_profiles.count({ where: whereClause }),
       ]);
 
       const result = {
@@ -216,7 +216,7 @@ export const mentorProfileService = {
       }
 
       // Check if profile exists
-      const existingProfile = await prisma.mentorProfile.findUnique({
+      const existingProfile = await prisma.mentor_profiles.findUnique({
         where: { id },
       });
 
@@ -243,7 +243,7 @@ export const mentorProfileService = {
       if (data.is_verified !== undefined) updateData.is_verified = data.is_verified;
 
       // Update the profile
-      const updatedProfile = await prisma.mentorProfile.update({
+      const updatedProfile = await prisma.mentor_profiles.update({
         where: { id },
         data: updateData,
       });
@@ -267,7 +267,7 @@ export const mentorProfileService = {
         throw new BadRequestError('Invalid mentor profile ID');
       }
 
-      const profile = await prisma.mentorProfile.findUnique({
+      const profile = await prisma.mentor_profiles.findUnique({
         where: { id },
       });
 
@@ -275,7 +275,7 @@ export const mentorProfileService = {
         throw new NotFoundError('Mentor profile not found');
       }
 
-      const updatedProfile = await prisma.mentorProfile.update({
+      const updatedProfile = await prisma.mentor_profiles.update({
         where: { id },
         data: {
           is_verified: !profile.is_verified,
@@ -303,7 +303,7 @@ export const mentorProfileService = {
       }
 
       // Check if profile exists
-      const existingProfile = await prisma.mentorProfile.findUnique({
+      const existingProfile = await prisma.mentor_profiles.findUnique({
         where: { id },
       });
 
@@ -312,7 +312,7 @@ export const mentorProfileService = {
       }
 
       // Delete the profile
-      await prisma.mentorProfile.delete({
+      await prisma.mentor_profiles.delete({
         where: { id },
       });
 

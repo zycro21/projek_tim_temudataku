@@ -5,19 +5,29 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-// Import semua routes individual untuk kompatibilitas dengan PERTAMA
-// import bookingRoutes from "./routes/bookingRoutes";
-// import sessionRoutes from "./routes/sessionRoutes";
-// import projectsRoutes from "./routes/projectRoutes";
-// import submissionsRoutes from "./routes/submissionRoutes";
-// import paymentRoutes from "./routes/paymentRoutes";
-// import generalRoutes from "./routes/generalRoutes";
-// import userBehaviorRoutes from "./routes/userBehaviorRoutes";
-// import referralCodeRoutes from "./routes/referralCodeRoutes";
-// Import juga routes dari struktur KEDUA
+
+// Import dari struktur KEDUA (main)
+import bookingRoutes from "./routes/bookingRoutes";
+import sessionRoutes from "./routes/sessionRoutes";
+import projectsRoutes from "./routes/projectRoutes";
+import submissionsRoutes from "./routes/submissionRoutes";
+import paymentRoutes from "./routes/paymentRoutes";
+import generalRoutes from "./routes/generalRoutes";
+import userBehaviorRoutes from "./routes/userBehaviorRoutes";
+import referralCodeRoutes from "./routes/referralCodeRoutes";
+import referralCommissionRoutes from "./routes/referralCommissionRoutes";
+import commissionPaymentRoutes from "./routes/commissionPaymentRoutes";
+import practiceRoutes from "./routes/practiceRoutes";
+import practiceMaterialRoutes from "./routes/practiceMaterialRoutes";
+import practiceFileRoutes from "./routes/practiceFileRoutes";
+import practicePurchaseRoutes from "./routes/practicePurchaseRoutes";
+import practiceProgressRoutes from "./routes/practiceProgressRoutes";
+import practiceReviewRoutes from "./routes/practiceReviewRoutes";
+import certificateRoutes from "./routes/certificateRoutes";
+
+// Import dari struktur PERTAMA (habdil-temu-dataku)
 import routes from "./routes";
 
-// Load environment variables
 dotenv.config();
 
 const app: Express = express();
@@ -54,17 +64,26 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-// Routes dari PERTAMA
-// app.use("/api", generalRoutes);
-// app.use("/api", bookingRoutes);
-// app.use("/api", sessionRoutes);
-// app.use("/api/projects", projectsRoutes);
-// app.use("/api/submissions", submissionsRoutes);
-// app.use("/api/payments", paymentRoutes);
-// app.use("/api/user-behavior", userBehaviorRoutes);
-// app.use("/api/referral-codes", referralCodeRoutes);
+// Routes dari KEDUA (main)
+app.use("/api/general", generalRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/sessions", sessionRoutes);
+app.use("/api/projects", projectsRoutes);
+app.use("/api/submissions", submissionsRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/user-behavior", userBehaviorRoutes);
+app.use("/api/referral-codes", referralCodeRoutes);
+app.use("/api/referral-commissions", referralCommissionRoutes);
+app.use("/api/commission-payments", commissionPaymentRoutes);
+app.use("/api/practices", practiceRoutes);
+app.use("/api/practice-materials", practiceMaterialRoutes);
+app.use("/api/practice-files", practiceFileRoutes);
+app.use("/api/practice-purchases", practicePurchaseRoutes);
+app.use("/api/practice-progress", practiceProgressRoutes);
+app.use("/api/practice-reviews", practiceReviewRoutes);
+app.use("/api/certificates", certificateRoutes);
 
-// Routes dari KEDUA - auth & profile
+// Routes dari PERTAMA (habdil-temu-dataku)
 app.use("/api", routes);
 
 // 404 handler

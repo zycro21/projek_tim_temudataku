@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
  * Get user profile by ID
  */
 export const getUserProfile = async (userId: number) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -61,7 +61,7 @@ export const getUserProfile = async (userId: number) => {
  */
 export const updateUserProfile = async (userId: number, profileData: any) => {
   // Check if user exists
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId }
   });
 
@@ -70,7 +70,7 @@ export const updateUserProfile = async (userId: number, profileData: any) => {
   }
 
   // Update user profile
-  const updatedUser = await prisma.user.update({
+  const updatedUser = await prisma.users.update({
     where: { id: userId },
     data: {
       full_name: profileData.full_name,
@@ -99,7 +99,7 @@ export const updateUserProfile = async (userId: number, profileData: any) => {
  */
 export const updateProfilePicture = async (userId: number, filePath: string) => {
   // Check if user exists
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId }
   });
 
@@ -123,7 +123,7 @@ export const updateProfilePicture = async (userId: number, filePath: string) => 
   const filename = path.basename(filePath);
 
   // Update user profile picture
-  const updatedUser = await prisma.user.update({
+  const updatedUser = await prisma.users.update({
     where: { id: userId },
     data: {
       profile_picture: filename,
@@ -145,7 +145,7 @@ export const updateProfilePicture = async (userId: number, filePath: string) => 
  */
 export const changeUserPassword = async (userId: number, currentPassword: string, newPassword: string) => {
   // Check if user exists
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId }
   });
 
@@ -164,7 +164,7 @@ export const changeUserPassword = async (userId: number, currentPassword: string
   const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
   // Update password
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: userId },
     data: {
       password_hash: hashedPassword,

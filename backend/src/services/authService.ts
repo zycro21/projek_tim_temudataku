@@ -119,7 +119,7 @@ export async function getNextUserRoleId(): Promise<number> {
  */
 export const register = async (data: RegisterData): Promise<AuthResult> => {
   // Check if email already exists
-  const existingUser = await prisma.user.findUnique({
+  const existingUser = await prisma.users.findUnique({
     where: { email: data.email }
   });
 
@@ -141,7 +141,7 @@ export const register = async (data: RegisterData): Promise<AuthResult> => {
   // Start transaction
   const result = await prisma.$transaction(async (tx) => {
     // Create user
-    const user = await tx.user.create({
+    const user = await tx.users.create({
       data: {
         id: nextId,
         email: data.email,
@@ -157,7 +157,7 @@ export const register = async (data: RegisterData): Promise<AuthResult> => {
     });
 
     // Get or create MENTEE role
-    const menteeRole = await tx.role.upsert({
+    const menteeRole = await tx.roles.upsert({
       where: { role_name: 'MENTEE' },
       update: {},
       create: {
@@ -168,7 +168,7 @@ export const register = async (data: RegisterData): Promise<AuthResult> => {
     });
 
     // Assign MENTEE role to user
-    await tx.userRole.create({
+    await tx.user_roles.create({
       data: {
         id: await getNextUserRoleId(),
         user_id: user.id,
@@ -177,7 +177,7 @@ export const register = async (data: RegisterData): Promise<AuthResult> => {
     });
 
     // Get user with roles
-    const userWithRoles = await tx.user.findUnique({
+    const userWithRoles = await tx.users.findUnique({
       where: { id: user.id },
       include: {
         user_roles: {
@@ -230,7 +230,7 @@ export const register = async (data: RegisterData): Promise<AuthResult> => {
  */
 export const verifyEmail = async (token: string): Promise<boolean> => {
   // Find user with matching token that hasn't expired
-  const user = await prisma.user.findFirst({
+  const user = await prisma.users.findFirst({
     where: {
       verification_token: token,
       verification_token_expires: {
@@ -244,7 +244,7 @@ export const verifyEmail = async (token: string): Promise<boolean> => {
   }
 
   // Update user as verified
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: user.id },
     data: {
       is_email_verified: true,
@@ -260,7 +260,7 @@ export const verifyEmail = async (token: string): Promise<boolean> => {
  * Resend verification email
  */
 export const resendVerificationEmail = async (email: string): Promise<void> => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { email }
   });
 
@@ -278,7 +278,7 @@ export const resendVerificationEmail = async (email: string): Promise<void> => {
   tokenExpiry.setHours(tokenExpiry.getHours() + 24);
 
   // Update user with new token
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: user.id },
     data: {
       verification_token: verificationToken,
@@ -295,7 +295,7 @@ export const resendVerificationEmail = async (email: string): Promise<void> => {
  */
 export const login = async (data: LoginData): Promise<AuthResult> => {
   // Find user by email
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { email: data.email },
     include: {
       user_roles: {
@@ -329,7 +329,7 @@ export const login = async (data: LoginData): Promise<AuthResult> => {
   }
 
   // Update last login
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: user.id },
     data: { last_login: new Date() }
   });
@@ -374,7 +374,7 @@ export const logout = async (
   ipAddress?: string, 
   userAgent?: string
 ): Promise<void> => {
-  await prisma.userBehavior.create({
+  await prisma.user_behavior.create({
     data: {
       id: await getNextUserBehaviorId(),
       user_id: userId,
@@ -392,7 +392,7 @@ export const logout = async (
  */
 export const requestPasswordReset = async (email: string): Promise<void> => {
   // Find user by email
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { email }
   });
 
@@ -407,7 +407,7 @@ export const requestPasswordReset = async (email: string): Promise<void> => {
   tokenExpiry.setHours(tokenExpiry.getHours() + 1); // Token valid for 1 hour
 
   // Update user with reset token
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: user.id },
     data: {
       verification_token: resetToken,
@@ -424,7 +424,7 @@ export const requestPasswordReset = async (email: string): Promise<void> => {
  */
 export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
   // Find user with matching token that hasn't expired
-  const user = await prisma.user.findFirst({
+  const user = await prisma.users.findFirst({
     where: {
       verification_token: token,
       verification_token_expires: {
@@ -441,7 +441,7 @@ export const resetPassword = async (token: string, newPassword: string): Promise
   const hashedPassword = await bcrypt.hash(newPassword, 10);
 
   // Update user password and clear token
-  await prisma.user.update({
+  await prisma.users.update({
     where: { id: user.id },
     data: {
       password_hash: hashedPassword,

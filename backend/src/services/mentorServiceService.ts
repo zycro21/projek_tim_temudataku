@@ -34,7 +34,7 @@ export const searchMentoringServices = async (
     const skip = (page - 1) * limit;
     
     // Build the where clause
-    const where: Prisma.MentoringServiceWhereInput = {};
+    const where: Prisma.mentoring_servicesWhereInput = {};
     
     // Text search in name and description
     if (searchQuery) {
@@ -98,10 +98,10 @@ export const searchMentoringServices = async (
     const sortDirection = sortOptions.direction === 'asc' ? 'asc' : 'desc';
     
     // Count total records for pagination
-    const total = await prisma.mentoringService.count({ where });
+    const total = await prisma.mentoring_services.count({ where });
     
     // Get services with mentor information
-    const services = await prisma.mentoringService.findMany({
+    const services = await prisma.mentoring_services.findMany({
       where,
       include: {
         mentor: {
@@ -114,23 +114,7 @@ export const searchMentoringServices = async (
             },
           },
         },
-        sessions: {
-          where: {
-            start_time: { gte: new Date() },
-            status: 'scheduled'
-          },
-          orderBy: {
-            start_time: 'asc'
-          },
-          take: 3, // Just get the next 3 upcoming sessions
-          include: {
-            _count: {
-              select: {
-                bookings: true
-              }
-            }
-          }
-        }
+        // We'll get sessions separately since it's not directly included in the model
       },
       skip,
       take: limit,
@@ -139,30 +123,48 @@ export const searchMentoringServices = async (
       },
     });
     
-    // Format the response for client consumption
-    const formattedServices = services.map(service => ({
-      id: service.id,
-      mentorId: service.mentor_id,
-      mentorName: service.mentor.user.full_name,
-      mentorPicture: service.mentor.user.profile_picture,
-      expertise: service.mentor.expertise,
-      serviceName: service.service_name,
-      description: service.description,
-      price: service.price,
-      serviceType: service.service_type,
-      maxParticipants: service.max_participants,
-      durationDays: service.duration_days,
-      isActive: service.is_active,
-      upcomingSessions: service.sessions.map(session => ({
-        id: session.id,
-        startTime: session.start_time,
-        endTime: session.end_time,
-        availableSlots: service.max_participants 
-          ? (service.max_participants - (session._count?.bookings || 0)) 
-          : null
-      })),
-      createdAt: service.created_at,
-      updatedAt: service.updated_at,
+    // Get upcoming sessions for each service
+    const formattedServices = await Promise.all(services.map(async (service) => {
+      // Fetch the next 3 upcoming sessions for this service
+      const upcomingSessions = await prisma.mentoring_sessions.findMany({
+        where: {
+          service_id: service.id,
+          start_time: { gte: new Date() },
+          status: 'scheduled'
+        },
+        orderBy: {
+          start_time: 'asc'
+        },
+        take: 3,
+        include: {
+          bookings: true
+        }
+      });
+      
+      return {
+        id: service.id,
+        mentorId: service.mentor_id,
+        mentorName: service.mentor.user.full_name,
+        mentorPicture: service.mentor.user.profile_picture,
+        expertise: service.mentor.expertise,
+        serviceName: service.service_name,
+        description: service.description,
+        price: service.price,
+        serviceType: service.service_type,
+        maxParticipants: service.max_participants,
+        durationDays: service.duration_days,
+        isActive: service.is_active,
+        upcomingSessions: upcomingSessions.map(session => ({
+          id: session.id,
+          startTime: session.start_time,
+          endTime: session.end_time,
+          availableSlots: service.max_participants 
+            ? (service.max_participants - session.bookings.length) 
+            : null
+        })),
+        createdAt: service.created_at,
+        updatedAt: service.updated_at,
+      };
     }));
     
     return {
@@ -191,7 +193,7 @@ export const searchMentoringServices = async (
  * Get distinct service types for filters
  */
 const getDistinctServiceTypes = async () => {
-  const types = await prisma.mentoringService.findMany({
+  const types = await prisma.mentoring_services.findMany({
     select: {
       service_type: true
     },
@@ -205,12 +207,12 @@ const getDistinctServiceTypes = async () => {
  * Get price range for filters
  */
 const getPriceRange = async () => {
-  const minPrice = await prisma.mentoringService.findFirst({
+  const minPrice = await prisma.mentoring_services.findFirst({
     select: { price: true },
     orderBy: { price: 'asc' }
   });
   
-  const maxPrice = await prisma.mentoringService.findFirst({
+  const maxPrice = await prisma.mentoring_services.findFirst({
     select: { price: true },
     orderBy: { price: 'desc' }
   });
@@ -225,12 +227,12 @@ const getPriceRange = async () => {
  * Get duration range for filters
  */
 const getDurationRange = async () => {
-  const minDuration = await prisma.mentoringService.findFirst({
+  const minDuration = await prisma.mentoring_services.findFirst({
     select: { duration_days: true },
     orderBy: { duration_days: 'asc' }
   });
   
-  const maxDuration = await prisma.mentoringService.findFirst({
+  const maxDuration = await prisma.mentoring_services.findFirst({
     select: { duration_days: true },
     orderBy: { duration_days: 'desc' }
   });
@@ -246,7 +248,7 @@ const getDurationRange = async () => {
  */
 export const getMentorProfileByUserId = async (userId: number) => {
   try {
-    const mentorProfile = await prisma.mentorProfile.findUnique({
+    const mentorProfile = await prisma.mentor_profiles.findUnique({
       where: {
         user_id: userId,
       },
@@ -278,7 +280,7 @@ export const getAllMentoringServices = async (
     const skip = (page - 1) * limit;
     
     // Build the where clause
-    const where: Prisma.MentoringServiceWhereInput = {
+    const where: Prisma.mentoring_servicesWhereInput = {
       ...filters,
     };
     
@@ -291,10 +293,10 @@ export const getAllMentoringServices = async (
     }
     
     // Count total records for pagination
-    const total = await prisma.mentoringService.count({ where });
+    const total = await prisma.mentoring_services.count({ where });
     
     // Get services with mentor information
-    const services = await prisma.mentoringService.findMany({
+    const services = await prisma.mentoring_services.findMany({
       where,
       include: {
         mentor: {
@@ -351,7 +353,7 @@ export const getAllMentoringServices = async (
  */
 export const getMentoringServiceById = async (id: number) => {
   try {
-    const service = await prisma.mentoringService.findUnique({
+    const service = await prisma.mentoring_services.findUnique({
       where: {
         id,
       },
@@ -367,13 +369,17 @@ export const getMentoringServiceById = async (id: number) => {
             },
           },
         },
-        sessions: true,
       },
     });
     
     if (!service) {
       throw new NotFoundError('Mentoring service not found');
     }
+    
+    // Get sessions for this service separately
+    const sessions = await prisma.mentoring_sessions.findMany({
+      where: { service_id: id },
+    });
     
     // Format the response
     return {
@@ -392,7 +398,7 @@ export const getMentoringServiceById = async (id: number) => {
       isActive: service.is_active,
       createdAt: service.created_at,
       updatedAt: service.updated_at,
-      sessions: service.sessions.map(session => ({
+      sessions: sessions.map(session => ({
         id: session.id,
         startTime: session.start_time,
         endTime: session.end_time,
@@ -422,56 +428,57 @@ export const getMentoringServicesByMentorId = async (
     const skip = (page - 1) * limit;
     
     // Build the where clause
-    const where: Prisma.MentoringServiceWhereInput = {
+    const where: Prisma.mentoring_servicesWhereInput = {
       mentor_id: mentorId,
       ...filters,
     };
     
     // Count total records for pagination
-    const total = await prisma.mentoringService.count({ where });
+    const total = await prisma.mentoring_services.count({ where });
     
     // Get services
-    const services = await prisma.mentoringService.findMany({
+    const services = await prisma.mentoring_services.findMany({
       where,
-      include: {
-        sessions: {
-          orderBy: {
-            start_time: 'asc',
-          },
-          where: {
-            start_time: {
-              gte: new Date(),
-            },
-          },
-          take: 5,  // Show only a few upcoming sessions
-        },
-      },
       skip,
       take: limit,
       orderBy: {
         created_at: 'desc',
       },
     });
-    
-    // Format the response
-    const formattedServices = services.map(service => ({
-      id: service.id,
-      mentorId: service.mentor_id,
-      serviceName: service.service_name,
-      description: service.description,
-      price: service.price,
-      serviceType: service.service_type,
-      maxParticipants: service.max_participants,
-      durationDays: service.duration_days,
-      isActive: service.is_active,
-      createdAt: service.created_at,
-      updatedAt: service.updated_at,
-      upcomingSessions: service.sessions.map(session => ({
-        id: session.id,
-        startTime: session.start_time,
-        endTime: session.end_time,
-        status: session.status,
-      })),
+
+    // Format the response with upcoming sessions
+    const formattedServices = await Promise.all(services.map(async (service) => {
+      // Get upcoming sessions for this service
+      const upcomingSessions = await prisma.mentoring_sessions.findMany({
+        where: {
+          service_id: service.id,
+          start_time: { gte: new Date() },
+        },
+        orderBy: {
+          start_time: 'asc',
+        },
+        take: 5, // Show only a few upcoming sessions
+      });
+
+      return {
+        id: service.id,
+        mentorId: service.mentor_id,
+        serviceName: service.service_name,
+        description: service.description,
+        price: service.price,
+        serviceType: service.service_type,
+        maxParticipants: service.max_participants,
+        durationDays: service.duration_days,
+        isActive: service.is_active,
+        createdAt: service.created_at,
+        updatedAt: service.updated_at,
+        upcomingSessions: upcomingSessions.map(session => ({
+          id: session.id,
+          startTime: session.start_time,
+          endTime: session.end_time,
+          status: session.status,
+        })),
+      };
     }));
     
     return {
@@ -494,7 +501,7 @@ export const getMentoringServicesByMentorId = async (
 export const createMentoringService = async (data: MentoringServiceCreate) => {
   try {
     // Check if mentor exists
-    const mentor = await prisma.mentorProfile.findUnique({
+    const mentor = await prisma.mentor_profiles.findUnique({
       where: {
         id: data.mentorId,
       },
@@ -508,7 +515,7 @@ export const createMentoringService = async (data: MentoringServiceCreate) => {
     const newId = Math.floor(Date.now() / 1000);
     
     // Create new service
-    const newService = await prisma.mentoringService.create({
+    const newService = await prisma.mentoring_services.create({
       data: {
         id: newId,
         mentor_id: data.mentorId,
@@ -551,7 +558,7 @@ export const updateMentoringService = async (
 ) => {
   try {
     // Check if service exists
-    const existingService = await prisma.mentoringService.findUnique({
+    const existingService = await prisma.mentoring_services.findUnique({
       where: {
         id,
       },
@@ -562,7 +569,7 @@ export const updateMentoringService = async (
     }
     
     // Update service
-    const updatedService = await prisma.mentoringService.update({
+    const updatedService = await prisma.mentoring_services.update({
       where: {
         id,
       },
@@ -605,7 +612,7 @@ export const updateMentoringService = async (
 export const toggleServiceStatus = async (id: number) => {
   try {
     // Check if service exists
-    const existingService = await prisma.mentoringService.findUnique({
+    const existingService = await prisma.mentoring_services.findUnique({
       where: {
         id,
       },
@@ -616,7 +623,7 @@ export const toggleServiceStatus = async (id: number) => {
     }
     
     // Toggle status
-    const updatedService = await prisma.mentoringService.update({
+    const updatedService = await prisma.mentoring_services.update({
       where: {
         id,
       },
@@ -647,12 +654,9 @@ export const toggleServiceStatus = async (id: number) => {
 export const deleteMentoringService = async (id: number) => {
   try {
     // Check if service exists
-    const existingService = await prisma.mentoringService.findUnique({
+    const existingService = await prisma.mentoring_services.findUnique({
       where: {
         id,
-      },
-      include: {
-        sessions: true,
       },
     });
     
@@ -661,16 +665,23 @@ export const deleteMentoringService = async (id: number) => {
     }
     
     // Check if service has active sessions
-    const hasActiveSessions = existingService.sessions.some(
-      session => session.status === 'scheduled' || session.status === 'ongoing'
-    );
+    const sessions = await prisma.mentoring_sessions.findMany({
+      where: {
+        service_id: id,
+        status: {
+          in: ['scheduled', 'ongoing']
+        }
+      }
+    });
+    
+    const hasActiveSessions = sessions.length > 0;
     
     if (hasActiveSessions) {
       throw new BadRequestError('Cannot delete service with active sessions');
     }
     
     // Delete service
-    await prisma.mentoringService.delete({
+    await prisma.mentoring_services.delete({
       where: {
         id,
       },
@@ -684,4 +695,3 @@ export const deleteMentoringService = async (id: number) => {
     throw new InternalServerError('Error deleting mentoring service');
   }
 };
-

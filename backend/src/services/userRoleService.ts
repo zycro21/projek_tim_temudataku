@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
  */
 export const getUserRoles = async (userId: number) => {
   // Check if user exists
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId }
   });
 
@@ -18,7 +18,7 @@ export const getUserRoles = async (userId: number) => {
   }
 
   // Get user roles
-  const userRoles = await prisma.userRole.findMany({
+  const userRoles = await prisma.user_roles.findMany({
     where: { user_id: userId },
     include: {
       role: true
@@ -40,7 +40,7 @@ export const getUserRoles = async (userId: number) => {
  */
 export const assignRoleToUser = async (userId: number, roleId: number) => {
   // Check if user exists
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId }
   });
 
@@ -49,7 +49,7 @@ export const assignRoleToUser = async (userId: number, roleId: number) => {
   }
 
   // Check if role exists
-  const role = await prisma.role.findUnique({
+  const role = await prisma.roles.findUnique({
     where: { id: roleId }
   });
 
@@ -58,7 +58,7 @@ export const assignRoleToUser = async (userId: number, roleId: number) => {
   }
 
   // Check if user already has this role
-  const existingUserRole = await prisma.userRole.findFirst({
+  const existingUserRole = await prisma.user_roles.findFirst({
     where: {
       user_id: userId,
       role_id: roleId
@@ -70,7 +70,7 @@ export const assignRoleToUser = async (userId: number, roleId: number) => {
   }
 
   // Get the max id and increment by 1 for the new user role
-  const maxId = await prisma.userRole.findFirst({
+  const maxId = await prisma.user_roles.findFirst({
     orderBy: {
       id: 'desc'
     },
@@ -82,7 +82,7 @@ export const assignRoleToUser = async (userId: number, roleId: number) => {
   const newId = maxId ? maxId.id + 1 : 1;
 
   // Assign role to user
-  const userRole = await prisma.userRole.create({
+  const userRole = await prisma.user_roles.create({
     data: {
       id: newId,
       user_id: userId,
@@ -106,7 +106,7 @@ export const assignRoleToUser = async (userId: number, roleId: number) => {
  */
 export const removeRoleFromUser = async (userId: number, roleId: number) => {
   // Check if user exists
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId }
   });
 
@@ -115,7 +115,7 @@ export const removeRoleFromUser = async (userId: number, roleId: number) => {
   }
 
   // Check if role exists
-  const role = await prisma.role.findUnique({
+  const role = await prisma.roles.findUnique({
     where: { id: roleId }
   });
 
@@ -124,7 +124,7 @@ export const removeRoleFromUser = async (userId: number, roleId: number) => {
   }
 
   // Check if user has this role
-  const userRole = await prisma.userRole.findFirst({
+  const userRole = await prisma.user_roles.findFirst({
     where: {
       user_id: userId,
       role_id: roleId
@@ -136,7 +136,7 @@ export const removeRoleFromUser = async (userId: number, roleId: number) => {
   }
 
   // Check if this is the user's only role
-  const userRoleCount = await prisma.userRole.count({
+  const userRoleCount = await prisma.user_roles.count({
     where: {
       user_id: userId
     }
@@ -147,7 +147,7 @@ export const removeRoleFromUser = async (userId: number, roleId: number) => {
   }
 
   // Remove role from user
-  return await prisma.userRole.delete({
+  return await prisma.user_roles.delete({
     where: { id: userRole.id }
   });
 };

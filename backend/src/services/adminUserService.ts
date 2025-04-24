@@ -40,7 +40,7 @@ export const createUser = async (data: CreateUserData): Promise<UserResult> => {
   }
 
   // Check if email already exists
-  const existingUser = await prisma.user.findUnique({
+  const existingUser = await prisma.users.findUnique({
     where: { email: data.email }
   });
 
@@ -57,7 +57,7 @@ export const createUser = async (data: CreateUserData): Promise<UserResult> => {
   // Start transaction
   const result = await prisma.$transaction(async (tx) => {
     // Create user
-    const user = await tx.user.create({
+    const user = await tx.users.create({
       data: {
         id: nextId,
         email: data.email,
@@ -71,7 +71,7 @@ export const createUser = async (data: CreateUserData): Promise<UserResult> => {
     });
 
     // Get or create role
-    const role = await tx.role.upsert({
+    const role = await tx.roles.upsert({
       where: { role_name: data.role },
       update: {},
       create: {
@@ -82,7 +82,7 @@ export const createUser = async (data: CreateUserData): Promise<UserResult> => {
     });
 
     // Assign role to user
-    await tx.userRole.create({
+    await tx.user_roles.create({
       data: {
         id: await getNextUserRoleId(),
         user_id: user.id,
@@ -91,7 +91,7 @@ export const createUser = async (data: CreateUserData): Promise<UserResult> => {
     });
 
     // Get user with roles
-    const userWithRoles = await tx.user.findUnique({
+    const userWithRoles = await tx.users.findUnique({
       where: { id: user.id },
       include: {
         user_roles: {
@@ -121,7 +121,7 @@ export const createUser = async (data: CreateUserData): Promise<UserResult> => {
  * Get all users with their roles
  */
 export const getAllUsers = async () => {
-  const users = await prisma.user.findMany({
+  const users = await prisma.users.findMany({
     include: {
       user_roles: {
         include: {
@@ -155,7 +155,7 @@ export const getAllUsers = async () => {
  * Get count of users with ADMIN role
  */
 export const getAdminCount = async (): Promise<number> => {
-  const adminRole = await prisma.role.findUnique({
+  const adminRole = await prisma.roles.findUnique({
     where: { role_name: 'ADMIN' }
   });
 
@@ -163,7 +163,7 @@ export const getAdminCount = async (): Promise<number> => {
     return 0;
   }
 
-  const count = await prisma.userRole.count({
+  const count = await prisma.user_roles.count({
     where: { role_id: adminRole.id }
   });
 
@@ -175,7 +175,7 @@ export const getAdminCount = async (): Promise<number> => {
  */
 export const toggleUserStatus = async (userId: number) => {
   // Check if user exists
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId }
   });
 
@@ -184,7 +184,7 @@ export const toggleUserStatus = async (userId: number) => {
   }
 
   // Toggle status
-  const updated = await prisma.user.update({
+  const updated = await prisma.users.update({
     where: { id: userId },
     data: {
       is_active: !user.is_active,

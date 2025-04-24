@@ -20,14 +20,6 @@ if (USE_PRISMA) {
       }
     };
 
-    // Handle unhandled promise rejections
-    process.on("unhandledRejection", (err: Error) => {
-      console.error("UNHANDLED REJECTION! 💥 Shutting down...");
-      console.error(err.name, err.message);
-      // Tutup server dengan baik
-      process.exit(1);
-    });
-
     process.on("SIGTERM", async () => {
       console.log("👋 SIGTERM received. Shutting down...");
       await prisma.$disconnect();
@@ -60,9 +52,6 @@ const startServer = async (connectDB: () => Promise<void>) => {
 
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
-    console.log(`
-    🚀 Server is running in ${process.env.NODE_ENV} mode on http://localhost:${PORT}
-    🔗 API available at http://localhost:${PORT}/api
-    `);
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
 };

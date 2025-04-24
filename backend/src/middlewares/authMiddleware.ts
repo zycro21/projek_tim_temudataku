@@ -33,7 +33,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as { id: number; email: string };
     
     // Dapatkan user dari database dengan roles
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: decoded.id },
       include: {
         user_roles: {

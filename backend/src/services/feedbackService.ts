@@ -39,7 +39,7 @@ export const createFeedback = async (data: FeedbackCreateInput) => {
   }
 
   // Check if the session exists
-  const session = await prisma.mentoringSession.findUnique({
+  const session = await prisma.mentoring_sessions.findUnique({
     where: { id: data.session_id },
   });
 
@@ -48,7 +48,7 @@ export const createFeedback = async (data: FeedbackCreateInput) => {
   }
 
   // Check if the user is a participant in this session
-  const booking = await prisma.booking.findFirst({
+  const booking = await prisma.bookings.findFirst({
     where: {
       session_id: data.session_id,
       mentee_id: data.user_id,
@@ -287,7 +287,7 @@ export const getFeedbackBySession = async (sessionId: number, page: number = 1, 
   const skip = (page - 1) * limit;
 
   // Check if session exists
-  const session = await prisma.mentoringSession.findUnique({
+  const session = await prisma.mentoring_sessions.findUnique({
     where: { id: sessionId },
   });
 
@@ -347,7 +347,7 @@ export const getFeedbackBySession = async (sessionId: number, page: number = 1, 
  */
 export const getMentorAverageRating = async (mentorId: number) => {
   // Check if mentor exists
-  const mentor = await prisma.mentorProfile.findUnique({
+  const mentor = await prisma.mentor_profiles.findUnique({
     where: { id: mentorId },
   });
 
@@ -356,7 +356,7 @@ export const getMentorAverageRating = async (mentorId: number) => {
   }
 
   // Get all services by this mentor
-  const mentorServices = await prisma.mentoringService.findMany({
+  const mentorServices = await prisma.mentoring_services.findMany({
     where: {
       mentor_id: mentorId,
     },
@@ -368,7 +368,7 @@ export const getMentorAverageRating = async (mentorId: number) => {
   const serviceIds = mentorServices.map(service => service.id);
 
   // Get all sessions for these services
-  const sessions = await prisma.mentoringSession.findMany({
+  const sessions = await prisma.mentoring_sessions.findMany({
     where: {
       service_id: {
         in: serviceIds,
@@ -426,7 +426,7 @@ export const getMentorFeedback = async (mentorId: number, page: number = 1, limi
   const skip = (page - 1) * limit;
 
   // Check if mentor exists
-  const mentor = await prisma.mentorProfile.findUnique({
+  const mentor = await prisma.mentor_profiles.findUnique({
     where: { id: mentorId },
     include: {
       user: {
@@ -444,7 +444,7 @@ export const getMentorFeedback = async (mentorId: number, page: number = 1, limi
   }
 
   // Get all services by this mentor
-  const mentorServices = await prisma.mentoringService.findMany({
+  const mentorServices = await prisma.mentoring_services.findMany({
     where: {
       mentor_id: mentorId,
     },
@@ -456,7 +456,7 @@ export const getMentorFeedback = async (mentorId: number, page: number = 1, limi
   const serviceIds = mentorServices.map(service => service.id);
 
   // Get all sessions for these services
-  const sessions = await prisma.mentoringSession.findMany({
+  const sessions = await prisma.mentoring_sessions.findMany({
     where: {
       service_id: {
         in: serviceIds,
