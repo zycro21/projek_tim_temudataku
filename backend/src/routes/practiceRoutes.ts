@@ -1,4 +1,4 @@
-import express from "express";
+import express, { RequestHandler } from "express";
 import {
   createPractice,
   updatePractice,
@@ -10,11 +10,11 @@ import {
 
 const router = express.Router();
 
-router.post("/", createPractice);
-router.put("/:id", updatePractice);
-router.patch("/:id/toggle-status", togglePracticeStatus);
-router.delete("/:id", deletePractice);
-router.get("/", getAllPractices);
-router.get("/:id", getPracticeById);
+router.post("/", createPractice as RequestHandler);
+router.put("/:id", updatePractice as RequestHandler);
+router.patch("/:id/toggle-status", togglePracticeStatus as RequestHandler);
+router.delete("/:id", deletePractice as RequestHandler);
+router.get("/", getAllPractices as RequestHandler);
+router.get("/:id", getPracticeById as RequestHandler);
 
 export default router;
