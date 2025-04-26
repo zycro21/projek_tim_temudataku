@@ -2,7 +2,6 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
 
 export default function Mentoring() {
   const alumni = [

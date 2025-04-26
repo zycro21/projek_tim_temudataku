@@ -2,7 +2,7 @@
 @import "@fontsource/inter/index.css";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -14,6 +14,138 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Brand Colors */
+  --primary-base: #0CAF6F;
+  --secondary-main: #243A77;
+  --secondary-10: #D1D5DC;
+
+  /* Text Colors */
+  --text-primary: #0E1115;
+  --text-secondary: #737373;
+  --text-tertiary: #FFFFFF;
+
+  /* Background Colors */
+  --background-primary: #FFFFFF;
+  --background-secondary: #F5F5F5;
+  --background-disable: #EEEEEE;
+
+  /* Border Colors */
+  --border-primary: #E0E0E0;
+  --border-disable: #F0F0F0;
+
+  /* State Colors */
+  --state-20: #F1F5F9;
+
+  /* Gray Colors */
+  --gray-10: #D9D9D9;
+  --gray-30: #A1A1A1;
+
+  /* Other Brand Colors */
+  --brand-green: #0CAF8F;
+  --brand-blue: #243A77;
+  --brand-green-light: #5F8368;
+
+  /* Additional Colors */
+  --white: #FFFFFF;
+  --black: #000000;
+  
+  /* Typography - Heading Styles */
+  --heading1-size: 42px;
+  --heading1-line-height: 50px;
+  
+  --heading2-size: 32px;
+  --heading2-line-height: 38px;
+  
+  --heading3-size: 24px;
+  --heading3-line-height: 28px;
+  
+  --heading4-size: 20px;
+  --heading4-line-height: 25px;
+  
+  --heading5-size: 16px;
+  --heading5-line-height: 25px;
+  
+  /* Typography - Body Styles */
+  --body-size: 16px;
+  --body-line-height: 25px;
+  
+  /* Typography - Caption Styles */
+  --caption-size: 14px;
+  --caption-line-height: 20px;
+  
+  /* Typography - Caption 2 Styles */
+  --caption2-size: 12px;
+  --caption2-line-height: auto;
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+}
+
+/* Typography Classes */
+.heading1 {
+  font-size: var(--heading1-size);
+  line-height: var(--heading1-line-height);
+}
+
+.heading2 {
+  font-size: var(--heading2-size);
+  line-height: var(--heading2-line-height);
+}
+
+.heading3 {
+  font-size: var(--heading3-size);
+  line-height: var(--heading3-line-height);
+}
+
+.heading4 {
+  font-size: var(--heading4-size);
+  line-height: var(--heading4-line-height);
+}
+
+.heading5 {
+  font-size: var(--heading5-size);
+  line-height: var(--heading5-line-height);
+}
+
+.body-text {
+  font-size: var(--body-size);
+  line-height: var(--body-line-height);
+}
+
+.caption {
+  font-size: var(--caption-size);
+  line-height: var(--caption-line-height);
+}
+
+.caption2 {
+  font-size: var(--caption2-size);
+  line-height: var(--caption2-line-height);
+}
+
+/* Font Weight Classes */
+.font-light {
+  font-weight: var(--font-light);
+}
+
+.font-regular {
+  font-weight: var(--font-regular);
+}
+
+.font-medium {
+  font-weight: var(--font-medium);
+}
+
+.font-semibold {
+  font-weight: var(--font-semibold);
+}
+
+.font-bold {
+  font-weight: var(--font-bold);
 }
 
 a {
@@ -25,14 +157,34 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #ffffff;
-  color: #213547;
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: var(--heading1-size);
+  line-height: var(--heading1-line-height);
+}
+
+h2 {
+  font-size: var(--heading2-size);
+  line-height: var(--heading2-line-height);
+}
+
+h3 {
+  font-size: var(--heading3-size);
+  line-height: var(--heading3-line-height);
+}
+
+h4 {
+  font-size: var(--heading4-size);
+  line-height: var(--heading4-line-height);
+}
+
+h5 {
+  font-size: var(--heading5-size);
+  line-height: var(--heading5-line-height);
 }
 
 /* button {
@@ -56,8 +208,8 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: var(--text-primary);
+    background-color: var(--background-primary);
   }
   /* button {
     background-color: #f9f9f9;
