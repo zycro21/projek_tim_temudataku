@@ -6,6 +6,7 @@ import Practice from "./pages/Practice"; //
 import Layout from "./components/Layout"; // Import Layout
 import PracticeDetail from "./pages/PracticeDetail";
 import ProgramsPage from "./pages/ProgramsPage";
+import ProgramsDetailPage from "./pages/ProgramsDetailPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/practice" element={<Practice />} />
           <Route path="/practice/:id" element={<PracticeDetail />} />
           <Route path="/programs" element={<ProgramsPage />} />
+          <Route path="/programs/:id" element={<ProgramsDetailPage />} />
         </Routes>
       </Layout>
     </Router>

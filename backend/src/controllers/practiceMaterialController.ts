@@ -5,6 +5,12 @@ import practiceMaterialModel from "../models/practiceMaterialModel";
 export const createMaterial = async (req: Request, res: Response) => {
   try {
     const data = req.body;
+
+    // Validasi input
+    if (!data.practice_id || !data.title || !data.order_number) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
     const result = await practiceMaterialModel.createMaterial(data);
     res.status(201).json({ message: "Material created", data: result });
   } catch (err) {

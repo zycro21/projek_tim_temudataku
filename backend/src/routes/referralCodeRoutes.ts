@@ -7,6 +7,7 @@ import {
   getAllReferralCodes,
   getReferralCodeByCode,
   verifyReferralCode,
+  deactivateReferralCode,
 } from "../controllers/referralCodeController";
 
 const router = express.Router();
@@ -31,5 +32,6 @@ router.get("/code/:code", getReferralCodeByCode as RequestHandler);
 
 // Route untuk memverifikasi penggunaan kode referral pada transaksi
 router.post("/verify/:code", verifyReferralCode as RequestHandler);
+router.patch("/deactivate/:id", deactivateReferralCode as RequestHandler);
 
 export default router;

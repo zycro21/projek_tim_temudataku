@@ -93,13 +93,21 @@ export const getAllSessions = async (
     throw new Error("Invalid sortBy column");
   }
 
-  const searchCondition = search
-    ? `WHERE "status" ILIKE $3 OR "meeting_link" ILIKE $3`
-    : "";
+  // Kondisi pencarian
+  let searchCondition = "";
+  let queryParams: (number | string)[] = [limit, offset]; // Allow both number and string in queryParams
+
+  if (search) {
+    // Include the search condition, and add the search parameter to the queryParams array
+    searchCondition = `WHERE "status" ILIKE $3 OR "meeting_link" ILIKE $3`;
+    queryParams.push(`%${search}%`); // Add search string to queryParams array
+  }
 
   const result = await pool.query(
     `SELECT * FROM "mentoring_sessions" ${searchCondition} ORDER BY "${sortBy}" ${order} LIMIT $1 OFFSET $2`,
-    [limit, offset, `%${search}%`]
+    queryParams // This now contains limit, offset, and search parameters in the correct order
   );
+
   return result.rows;
 };
+

@@ -35,7 +35,7 @@ export const updateBooking = async (
      RETURNING *`,
     [menteeId, sessionId, status, specialRequests || null, id]
   );
-  return result.rows[0]; 
+  return result.rows[0];
 };
 
 export const deleteBooking = async (id: number) => {
@@ -55,18 +55,30 @@ export const getAllBookings = async (
 ) => {
   const offset = (page - 1) * limit;
 
-  const validSortColumns = ['id', 'mentee_id', 'session_id', 'status', 'special_requests', 'created_at', 'updated_at'];
-
+  const validSortColumns = [
+    "id",
+    "mentee_id",
+    "session_id",
+    "status",
+    "special_requests",
+    "created_at",
+    "updated_at",
+  ];
   if (!validSortColumns.includes(sortBy)) {
-    throw new Error('Invalid sortBy column');
+    throw new Error("Invalid sortBy column");
   }
 
-  const searchCondition = search ? `WHERE "status" ILIKE $3 OR "special_requests" ILIKE $3` : '';
+  let query = `SELECT * FROM "bookings"`;
+  const params: (string | number)[] = [limit, offset];
 
-  const result = await pool.query(
-    `SELECT * FROM "bookings" ${searchCondition} ORDER BY "${sortBy}" ${order} LIMIT $1 OFFSET $2`,
-    [limit, offset, `%${search}%`]
-  );
+  if (search) {
+    query += ` WHERE "status" ILIKE $3 OR "special_requests" ILIKE $3`;
+    params.push(`%${search}%`);
+  }
+
+  query += ` ORDER BY "${sortBy}" ${order} LIMIT $1 OFFSET $2`;
+
+  const result = await pool.query(query, params);
   return result.rows;
 };
 
@@ -75,5 +87,5 @@ export default {
   getBookingById,
   updateBooking,
   deleteBooking,
-  getAllBookings
+  getAllBookings,
 };

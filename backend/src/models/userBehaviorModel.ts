@@ -128,26 +128,23 @@ export const getUserBehaviorByDateReport = async (
   interval: string
 ) => {
   const queryParams: string[] = [];
-  let query = `
-    SELECT DATE_TRUNC($3, "timestamp") AS period, COUNT(*) AS activity_count
-    FROM "user_behavior"
-  `;
+  let query = `SELECT DATE_TRUNC($1, "timestamp") AS period, COUNT(*) AS activity_count FROM "user_behavior"`;
 
   if (startDate && endDate) {
-    query += ` WHERE "timestamp" BETWEEN $1 AND $2`;
+    query += ` WHERE "timestamp" BETWEEN $2 AND $3`;
     queryParams.push(startDate, endDate);
   }
 
   query += ` GROUP BY period ORDER BY period`;
 
   try {
+    // Mengirimkan interval, startDate, dan endDate ke query sesuai urutan yang benar
     const result = await pool.query(query, [interval, ...queryParams]);
     return result.rows;
   } catch (error) {
     throw new Error("Error while fetching user behavior by date report");
   }
 };
-
 export default {
   createUserBehavior,
   getUserBehaviorByUserId,
