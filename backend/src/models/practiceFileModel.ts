@@ -1,19 +1,35 @@
 import pool from "../db";
 
+import path from "path";
+
 // Upload file
 export const uploadFile = async (
   practice_material_id: number,
   originalname: string,
   filepath: string
 ) => {
-  const result = await pool.query(
-    `INSERT INTO "practice_files" 
-     ("practice_material_id", "filename", "filepath") 
-     VALUES ($1, $2, $3) 
-     RETURNING *`,
-    [practice_material_id, originalname, filepath]
-  );
-  return result.rows[0];
+  try {
+    const fileExtension = path.extname(originalname).slice(1);
+
+    // Hitung jumlah file yang sudah ada untuk material ini
+    const countResult = await pool.query(
+      `SELECT COUNT(*) FROM "practice_files" WHERE material_id = $1`,
+      [practice_material_id]
+    );
+    const orderNumber = parseInt(countResult.rows[0].count, 10) + 1;
+
+    const result = await pool.query(
+      `INSERT INTO "practice_files" 
+       ("material_id", "file_name", "file_path", "file_type", "order_number") 
+       VALUES ($1, $2, $3, $4, $5) 
+       RETURNING *`,
+      [practice_material_id, originalname, filepath, fileExtension, orderNumber]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error("Error during file upload:", err);
+    throw new Error("Failed to upload file");
+  }
 };
 
 // Update file
@@ -57,7 +73,7 @@ export const deleteFile = async (id: number) => {
 // Ambil semua file berdasarkan ID materi
 export const getAllFiles = async (practice_material_id: number) => {
   const result = await pool.query(
-    `SELECT * FROM "practice_files" WHERE practice_material_id = $1 ORDER BY created_at DESC`,
+    `SELECT * FROM "practice_files" WHERE material_id = $1 ORDER BY created_at DESC`,
     [practice_material_id]
   );
   return result.rows;

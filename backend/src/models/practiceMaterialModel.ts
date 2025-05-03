@@ -5,21 +5,12 @@ export const createMaterial = async (data: {
   practice_id: number;
   title: string;
   description?: string;
-  url?: string;
-  type: string; // bisa berupa video, document, atau lainnya
+  order_number: number;
 }) => {
   const result = await pool.query(
-    `INSERT INTO "practice_materials" 
-     ("practice_id", "title", "description", "url", "type") 
-     VALUES ($1, $2, $3, $4, $5) 
-     RETURNING *`,
-    [
-      data.practice_id,
-      data.title,
-      data.description || null,
-      data.url || null,
-      data.type,
-    ]
+    `INSERT INTO "practice_materials" ("practice_id", "title", "description", "order_number") 
+    VALUES ($1, $2, $3, $4) RETURNING *`,
+    [data.practice_id, data.title, data.description || null, data.order_number]
   );
   return result.rows[0];
 };
@@ -30,14 +21,14 @@ export const updateMaterial = async (
   data: Partial<{
     title: string;
     description: string;
-    url: string;
-    type: string;
+    order_number: number;
   }>
 ) => {
   const fields: string[] = [];
-  const values: (string | number | boolean | null)[] = [];
+  const values: (string | number | null)[] = [];
   let count = 1;
 
+  // Untuk masing-masing field, buat query dinamis
   for (const [key, value] of Object.entries(data)) {
     if (value !== undefined) {
       fields.push(`"${key}" = $${count}`);
@@ -46,12 +37,11 @@ export const updateMaterial = async (
     }
   }
 
-  const query = `
-    UPDATE "practice_materials" 
-    SET ${fields.join(", ")}, updated_at = now() 
-    WHERE id = $${count} 
-    RETURNING *`;
+  if (fields.length === 0) {
+    throw new Error("No valid fields to update");
+  }
 
+  const query = `UPDATE "practice_materials" SET ${fields.join(", ")}, "updated_at" = now() WHERE id = $${count} RETURNING *`;
   values.push(id);
 
   const result = await pool.query(query, values);
@@ -70,7 +60,7 @@ export const deleteMaterial = async (id: number) => {
 // Ambil Semua Material dari Practice
 export const getAllMaterials = async (practice_id: number) => {
   const result = await pool.query(
-    `SELECT * FROM "practice_materials" WHERE practice_id = $1 ORDER BY created_at DESC`,
+    `SELECT * FROM "practice_materials" WHERE "practice_id" = $1 ORDER BY "order_number" ASC, "created_at" DESC`,
     [practice_id]
   );
   return result.rows;

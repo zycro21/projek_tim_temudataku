@@ -13,7 +13,7 @@ const router = express.Router();
 router.post("/", createSessionHandler as RequestHandler);
 router.get("/", getSessionsHandler as RequestHandler);
 router.get("/:id", getSessionHandler as RequestHandler);
-router.put("/:id", updateSessionHandler as RequestHandler); 
+router.put("/:id", updateSessionHandler as RequestHandler);
 router.delete("/:id", deleteSessionHandler as RequestHandler);
 
 export default router;
