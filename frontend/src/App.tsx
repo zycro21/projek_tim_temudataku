@@ -3,11 +3,12 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Mentoring from "./pages/Mentoring";
 import Practice from "./pages/Practice"; 
-import Layout from "./components/Layout"; // Import Layout
+import Layout from "./components/Layout";
 import PracticeDetail from "./pages/PracticeDetail";
 import ProgramsPage from "./pages/ProgramsPage";
-import DashboardMentee from "./pages/DashboardMentee"; // Import Dashboard
-import EmailVerification from "./pages/EmailVerification"; // Import EmailVerification
+import ProgramsDetailPage from "./pages/ProgramsDetailPage";
+import DashboardMentee from "./pages/DashboardMentee";
+import EmailVerification from "./pages/EmailVerification";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
                 <Route path="/practice" element={<Practice />} />
                 <Route path="/practice/:id" element={<PracticeDetail />} />
                 <Route path="/programs" element={<ProgramsPage />} />
+                <Route path="/programs/:id" element={<ProgramsDetailPage />} />
               </Routes>
             </Layout>
           }

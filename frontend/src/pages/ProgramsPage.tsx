@@ -1,154 +1,22 @@
 // src/pages/Mentoring.tsx
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import ProgramCard from "../components/ProgramCard";
+import { useState } from "react";
+import { dummyPrograms } from "../data/dummyPrograms";
+import { dummyProgramsProject } from "../data/dummyProgramsProject";
+import { useKeenSlider } from "keen-slider/react";
+import { TestimoniBootcampSection } from "../components/TestimoniBootcampSection";
 
 export default function ProgramsPage() {
-  const dummyPrograms = [
-    {
-      id: 1,
-      title: "Bootcamp - Data Science",
-      level: "Level 2 – Skill Booster: Saatnya Upgrade Skill",
-      startDate: "15 Maret 2025",
-      endDate: "17 Maret 2025",
-      price: 500000,
-      originalPrice: 650000,
-      badge: "BEST PRACTICE",
-      image: "/img/Programs_pilih_section_picture1.png",
-      tools: [
-        "/img/Programs_pilih_section_skill1.png",
-        "/img/Programs_pilih_section_skill2.png",
-        "/img/Programs_pilih_section_skill3.png",
-      ],
-    },
-    {
-      id: 2,
-      title: "Short Class - Data Science",
-      level: "Level 2 – Skill Booster: Saatnya Upgrade Skill",
-      startDate: "15 Maret 2025",
-      endDate: "17 Maret 2025",
-      price: 500000,
-      originalPrice: 550000,
-      badge: "BEST PRACTICE",
-      image: "/img/Programs_pilih_section_picture2.png",
-      tools: [
-        "/img/Programs_pilih_section_skill1.png",
-        "/img/Programs_pilih_section_skill2.png",
-        "/img/Programs_pilih_section_skill3.png",
-      ],
-    },
-    {
-      id: 3,
-      title: "Live Class - Data Analysis",
-      level: "Level 2 – Skill Booster: Saatnya Upgrade Skill",
-      startDate: "Maret 2025",
-      endDate: "17 Maret 2025",
-      price: 500000,
-      originalPrice: 560000,
-      badge: "BEST PRACTICE",
-      image: "/img/Programs_pilih_section_picture3.png",
-      tools: [
-        "/img/Programs_pilih_section_skill1.png",
-        "/img/Programs_pilih_section_skill2.png",
-        "/img/Programs_pilih_section_skill3.png",
-      ],
-    },
-    {
-      id: 4,
-      title: "Bootcamp - Machine Learning",
-      level: "Level 3 – Skill Mastery: Jadi Expert di Bidangnya",
-      startDate: "20 Maret 2025",
-      endDate: "25 Maret 2025",
-      price: 750000,
-      originalPrice: 900000,
-      badge: "RECOMMENDED",
-      image: "/img/Programs_pilih_section_picture4.png",
-      tools: [
-        "/img/Programs_pilih_section_skill4.png",
-        "/img/Programs_pilih_section_skill5.png",
-        "/img/Programs_pilih_section_skill6.png",
-      ],
-    },
-    {
-      id: 5,
-      title: "Short Class - Python for Data",
-      level: "Level 1 – Skill Starter: Mulai Dari Dasar",
-      startDate: "10 April 2025",
-      endDate: "12 April 2025",
-      price: 300000,
-      originalPrice: 450000,
-      badge: "FAVORIT",
-      image: "/img/Programs_pilih_section_picture5.png",
-      tools: [
-        "/img/Programs_pilih_section_skill2.png",
-        "/img/Programs_pilih_section_skill7.png",
-        "/img/Programs_pilih_section_skill8.png",
-      ],
-    },
-    {
-      id: 6,
-      title: "Live Class - Excel for Analyst",
-      level: "Level 1 – Skill Starter: Mulai Dari Dasar",
-      startDate: "5 April 2025",
-      endDate: "7 April 2025",
-      price: 250000,
-      originalPrice: 400000,
-      badge: "FAVORIT",
-      image: "/img/Programs_pilih_section_picture6.png",
-      tools: [
-        "/img/Programs_pilih_section_skill1.png",
-        "/img/Programs_pilih_section_skill9.png",
-        "/img/Programs_pilih_section_skill10.png",
-      ],
-    },
-    {
-      id: 7,
-      title: "Bootcamp - SQL Mastery",
-      level: "Level 3 – Skill Mastery: Jadi Expert di Bidangnya",
-      startDate: "22 April 2025",
-      endDate: "28 April 2025",
-      price: 600000,
-      originalPrice: 800000,
-      badge: "RECOMMENDED",
-      image: "/img/Programs_pilih_section_picture7.png",
-      tools: [
-        "/img/Programs_pilih_section_skill3.png",
-        "/img/Programs_pilih_section_skill10.png",
-        "/img/Programs_pilih_section_skill6.png",
-      ],
-    },
-    {
-      id: 8,
-      title: "Live Class - Tableau Visualizations",
-      level: "Level 2 – Skill Booster: Saatnya Upgrade Skill",
-      startDate: "29 April 2025",
-      endDate: "30 April 2025",
-      price: 450000,
-      originalPrice: 550000,
-      badge: "POPULAR",
-      image: "/img/Programs_pilih_section_picture8.png",
-      tools: [
-        "/img/Programs_pilih_section_skill11.png",
-        "/img/Programs_pilih_section_skill12.png",
-        "/img/Programs_pilih_section_skill1.png",
-      ],
-    },
-    {
-      id: 9,
-      title: "Short Class - Data Cleaning",
-      level: "Level 1 – Skill Starter: Mulai Dari Dasar",
-      startDate: "2 Mei 2025",
-      endDate: "4 Mei 2025",
-      price: 350000,
-      originalPrice: 500000,
-      badge: "FAVORIT",
-      image: "/img/Programs_pilih_section_picture9.png",
-      tools: [
-        "/img/Programs_pilih_section_skill13.png",
-        "/img/Programs_pilih_section_skill2.png",
-        "/img/Programs_pilih_section_skill5.png",
-      ],
-    },
-  ];
+  
+  const [showAll, setShowAll] = useState(false);
+  const displayedPrograms = showAll ? dummyPrograms : dummyPrograms.slice(0, 6); // 2 baris × 3 kolom
+
+  const [sliderRef] = useKeenSlider<HTMLDivElement>({
+    loop: true,
+    slides: { perView: 2, spacing: 16 },
+  });
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -239,7 +107,6 @@ export default function ProgramsPage() {
             </div>
           </div>
         </section>
-
         {/* Benefit Section */}
         <section className="bg-white py-20 px-6 md:px-16" id="benefits">
           <div className="max-w-7xl mx-auto">
@@ -328,7 +195,6 @@ export default function ProgramsPage() {
             </div>
           </div>
         </section>
-
         {/* Pilih Bootcamp Section */}
         <section className="bg-white py-20 px-6 md:px-16" id="pilih-bootcamp">
           <div className="max-w-7xl mx-auto">
@@ -394,72 +260,74 @@ export default function ProgramsPage() {
 
             {/* Cards */}
             <div className="grid md:grid-cols-3 gap-6">
-              {dummyPrograms.map((program) => (
-                <div
-                  key={program.id}
-                  className="border rounded-xl shadow p-4 flex flex-col bg-white"
+              {displayedPrograms.map((program) => (
+                <ProgramCard key={program.id} program={program} />
+              ))}
+            </div>
+
+            {/* Button Lihat Lebih Banyak/Sedikit */}
+            {dummyPrograms.length > 6 && (
+              <div className="text-center mt-10">
+                <button
+                  onClick={() => setShowAll((prev) => !prev)}
+                  className="bg-[#1E3A8A] hover:bg-[#1b2e6e] text-white text-sm px-6 py-3 rounded-lg"
                 >
-                  <div className="relative">
+                  {showAll ? "Lihat Lebih Sedikit" : "Lihat Lebih Banyak"}
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+        {/* Programs Project Section */}
+        <section className="bg-white py-20 px-6 md:px-16" id="programs-project">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-10">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
+                Project Sejauh Ini, Keren Nggak Sih?
+              </h2>
+              <p className="text-gray-600 text-base max-w-2xl mx-auto">
+                Di sini kamu bisa lihat hasil karya alumni TemuDataku selama
+                ikut bootcamp. Bukan cuma materi, tapi project beneran yang
+                nunjukin skill mereka di dunia data. Yuk intip, siapa tahu bisa
+                jadi inspirasi kamu juga!
+              </p>
+            </div>
+
+            {/* Carousel */}
+            <div ref={sliderRef} className="keen-slider">
+              {dummyProgramsProject.map((project) => (
+                <div key={project.id} className="keen-slider__slide">
+                  <div className="bg-white rounded-xl shadow-md overflow-hidden">
                     <img
-                      src={program.image}
-                      alt="Ilustrasi Latihan"
-                      className="w-full h-48 object-cover"
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-56 object-cover"
                     />
-                    <span className="absolute top-3 right-3 bg-gray-100 text-xs px-3 py-1 rounded-full text-gray-700 font-medium shadow-sm">
-                      {program.level}
-                    </span>
-                    <div className="absolute bottom-0 left-0 w-full bg-[#1E3A8A] text-white text-xs text-center py-2 font-semibold">
-                      {program.badge}
+                    <div className="p-6">
+                      <h3 className="text-lg font-bold mb-2">
+                        {project.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-4">
+                        {project.description}
+                      </p>
+                      <p className="text-sm text-gray-500 mb-4 flex items-center gap-2">
+                        <span>👥</span>
+                        {project.contributors}
+                      </p>
+                      <button className="bg-green-500 text-white text-sm px-4 py-2 rounded-md hover:bg-green-600 transition">
+                        Jelajahi Proyek
+                      </button>
                     </div>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="font-semibold text-[16px] text-gray-800 mb-3">
-                    {program.title}
-                  </h3>
-
-                  {/* Tools */}
-                  <div className="flex gap-3 mb-3">
-                    {program.tools.map((tool, idx) => (
-                      <img
-                        key={idx}
-                        src={tool}
-                        alt={`tool-${idx}`}
-                        className="w-6 h-6 object-contain"
-                      />
-                    ))}
-                  </div>
-
-                  {/* Date */}
-                  <div className="flex items-center text-sm text-gray-600 mb-2 gap-2">
-                    <span>
-                      🗓️ {program.startDate} – {program.endDate}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm mb-4">
-                    <span className="text-gray-400 line-through">
-                      {program.originalPrice}
-                    </span>
-                    <span className="text-green-600 font-bold">
-                      {program.price}
-                    </span>
-                  </div>
-
-                  {/* CTA Buttons */}
-                  <div className="mt-auto flex flex-col gap-2">
-                    <button className="bg-[#0CA678] hover:bg-[#099268] text-white text-sm px-4 py-2 rounded-lg w-full">
-                      Daftar Sekarang
-                    </button>
-                    <button className="border border-[#0CA678] hover:bg-[#e6f9f2] text-[#0CA678] text-sm px-4 py-2 rounded-lg w-full">
-                      Lihat Detail
-                    </button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
+
+        {/* Testimoni Bootcamp Section */}
+        <TestimoniBootcampSection />
 
         {/* Need Help Section */}
         <section className="bg-gray-50 py-16 px-8 md:px-[100px]" id="bantuan">

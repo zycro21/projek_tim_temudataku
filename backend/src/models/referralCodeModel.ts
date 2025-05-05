@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import pool from "../db";
 
 // Fungsi untuk membuat referral code baru
@@ -7,10 +8,18 @@ export const createReferralCode = async (
   commissionPercentage: number,
   expiryDate: Date | null
 ) => {
+  const code = uuidv4(); // Menghasilkan kode unik untuk referral code
+
   const result = await pool.query(
-    `INSERT INTO "referral_codes" ("owner_id", "discount_percentage", "commission_percentage", "expiry_date") 
-    VALUES ($1, $2, $3, $4) RETURNING *`,
-    [ownerId, discountPercentage, commissionPercentage, expiryDate || null]
+    `INSERT INTO "referral_codes" ("owner_id", "discount_percentage", "commission_percentage", "expiry_date", "code") 
+    VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [
+      ownerId,
+      discountPercentage,
+      commissionPercentage,
+      expiryDate || null,
+      code,
+    ]
   );
   return result.rows[0];
 };
@@ -43,7 +52,10 @@ export const updateReferralCode = async (
 };
 
 // Fungsi untuk mengubah status kode referral (aktif/nonaktif)
-export const updateReferralCodeStatus = async (id: number, isActive: boolean) => {
+export const updateReferralCodeStatus = async (
+  id: number,
+  isActive: boolean
+) => {
   const result = await pool.query(
     `UPDATE "referral_codes" SET "is_active" = $1 WHERE "id" = $2 RETURNING *`,
     [isActive, id]
@@ -92,14 +104,22 @@ export const getAllReferralCodes = async (
     throw new Error("Invalid sortBy column");
   }
 
-  const searchCondition = search
-    ? `WHERE "code" ILIKE $3 OR "owner_id"::text ILIKE $3`
-    : "";
+  // Menginisialisasi kondisi pencarian sebagai string kosong
+  let searchCondition = "";
+  let queryParams: any[] = [limit, offset]; // Array parameter SQL, dimulai dengan limit dan offset
 
+  // Jika ada query pencarian, tambahkan kondisi pencarian
+  if (search) {
+    searchCondition = `WHERE "code" ILIKE $3 OR "owner_id"::text ILIKE $3`;
+    queryParams.push(`%${search}%`); // Menambahkan parameter pencarian ke dalam array queryParams
+  }
+
+  // Jalankan query dengan kondisi pencarian (jika ada)
   const result = await pool.query(
     `SELECT * FROM "referral_codes" ${searchCondition} ORDER BY "${sortBy}" ${order} LIMIT $1 OFFSET $2`,
-    [limit, offset, `%${search}%`]
+    queryParams
   );
+
   return result.rows;
 };
 

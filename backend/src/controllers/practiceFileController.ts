@@ -1,37 +1,52 @@
 import { Request, Response } from "express";
 import practiceFileModel from "../models/practiceFileModel";
 import formidable from "formidable";
+import { File as FormidableFile } from "formidable"; // penting!
 import path from "path";
+import { IncomingForm } from "formidable";
 import fs from "fs";
 
 // Upload file ke dalam material
 export const uploadFile = async (req: Request, res: Response) => {
-  const form = new formidable.IncomingForm();
-  form.uploadDir = path.join(__dirname, "../uploads"); // Tentukan direktori penyimpanan file
-  form.keepExtensions = true; // Menyimpan ekstensi file asli
+  const uploadPath = path.join(__dirname, "../uploads");
+
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+
+  const form = new IncomingForm({
+    uploadDir: uploadPath,
+    keepExtensions: true,
+  });
+
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      return res.status(500).json({ message: "Error uploading file", error: err });
+      return res
+        .status(500)
+        .json({ message: "Error uploading file", error: err });
     }
 
-    // Pastikan file ada
-    const file = files.file;
-    if (!file || Array.isArray(file)) {
+    let file = files.file;
+
+    if (!file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    // Dapatkan nama file dan path
-    const { originalFilename, filepath } = file;
+    // Ubah ke single file jika array
+    const uploadedFile: FormidableFile = Array.isArray(file) ? file[0] : file;
+    const { originalFilename, filepath } = uploadedFile;
 
     try {
       const { practice_material_id } = req.params;
       const result = await practiceFileModel.uploadFile(
         Number(practice_material_id),
-        originalFilename,
+        originalFilename ?? "untitled",
         filepath
       );
 
-      res.status(201).json({ message: "File uploaded successfully", data: result });
+      res
+        .status(201)
+        .json({ message: "File uploaded successfully", data: result });
     } catch (err) {
       res.status(500).json({ message: "Failed to upload file", error: err });
     }
@@ -67,7 +82,9 @@ export const deleteFile = async (req: Request, res: Response) => {
 export const getAllFiles = async (req: Request, res: Response) => {
   try {
     const { practice_material_id } = req.params;
-    const result = await practiceFileModel.getAllFiles(Number(practice_material_id));
+    const result = await practiceFileModel.getAllFiles(
+      Number(practice_material_id)
+    );
 
     res.status(200).json({ message: "Files fetched", data: result });
   } catch (err) {

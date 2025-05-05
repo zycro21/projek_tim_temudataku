@@ -87,7 +87,10 @@ export const getBookingsHandler = async (req: Request, res: Response) => {
     );
     res.status(200).json(bookings);
   } catch (error) {
-    res.status(500).json({ error: "Failed to get bookings" });
+    const errorAsError = error as Error;
+    res
+      .status(500)
+      .json({ error: "Failed to get bookings", details: errorAsError.message });
   }
 };
 

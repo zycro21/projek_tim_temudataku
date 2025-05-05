@@ -157,7 +157,7 @@ export const autoDeactivateExpiredCodes = async () => {
 
 export const verifyReferralCode = async (req: Request, res: Response) => {
   const { code } = req.params;
-  const { transactionAmount, transactionId } = req.body;  // Amount dan transactionId datang dari body request
+  const { transactionAmount, transactionId } = req.body; // Amount dan transactionId datang dari body request
 
   try {
     // 1. Verifikasi apakah kode referral valid
@@ -171,18 +171,22 @@ export const verifyReferralCode = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Referral code is not active" });
     }
 
-    if (referralCode.expiry_date && new Date(referralCode.expiry_date) < new Date()) {
+    if (
+      referralCode.expiry_date &&
+      new Date(referralCode.expiry_date) < new Date()
+    ) {
       return res.status(400).json({ message: "Referral code has expired" });
     }
 
     // 2. Menghitung komisi berdasarkan transaksi dan persentase komisi dari referralCode
-    const commissionAmount = (transactionAmount * referralCode.commission_percentage) / 100;
+    const commissionAmount =
+      (transactionAmount * referralCode.commission_percentage) / 100;
 
     // 3. Membuat entri referral commission
     await referralCommissionModel.createReferralCommission(
-      referralCode.id,  // referralCodeId
-      transactionId,     // transactionId dari body request
-      commissionAmount   // commissionAmount yang dihitung
+      referralCode.id, // referralCodeId
+      transactionId, // transactionId dari body request
+      commissionAmount // commissionAmount yang dihitung
     );
 
     res.status(200).json({

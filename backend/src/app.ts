@@ -10,7 +10,6 @@ import rateLimit from "express-rate-limit";
 import bookingRoutes from "./routes/bookingRoutes";
 import sessionRoutes from "./routes/sessionRoutes";
 import projectsRoutes from "./routes/projectRoutes";
-import submissionsRoutes from "./routes/submissionRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
 import generalRoutes from "./routes/generalRoutes";
 import userBehaviorRoutes from "./routes/userBehaviorRoutes";
@@ -69,7 +68,6 @@ app.use("/api/general", generalRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/projects", projectsRoutes);
-app.use("/api/submissions", submissionsRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/user-behavior", userBehaviorRoutes);
 app.use("/api/referral-codes", referralCodeRoutes);
@@ -97,9 +95,9 @@ app.all("*", (req: Request, res: Response) => {
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Error:", err);
-  
+
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  
+
   res.status(statusCode).json({
     status: "error",
     message: err.message || "Internal Server Error",
