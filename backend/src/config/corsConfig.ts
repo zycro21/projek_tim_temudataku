@@ -2,7 +2,7 @@ import cors from "cors";
 
 const allowedOrigins = [
     'http://localhost:3000', 
-    'http://localhost:5173', 
+    'http://localhost:5173'
 ];
 
 const corsOptions: cors.CorsOptions = {

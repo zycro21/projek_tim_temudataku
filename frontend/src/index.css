@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "@fontsource/inter/index.css";
+@import "tw-animate-css";
+
 @layer utilities {
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -9,8 +11,9 @@
     scrollbar-width: none;
   }
 }
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -22,6 +25,170 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Brand Colors */
+  --primary-base: #0caf6f;
+  --secondary-main: #243a77;
+  --secondary-10: #d1d5dc;
+
+  /* Text Colors */
+  --text-primary: #0e1115;
+  --text-secondary: #737373;
+  --text-tertiary: #ffffff;
+
+  /* Background Colors */
+  --background-primary: #ffffff;
+  --background-secondary: #f5f5f5;
+  --background-disable: #eeeeee;
+
+  /* Border Colors */
+  --border-primary: #e0e0e0;
+  --border-disable: #f0f0f0;
+
+  /* State Colors */
+  --state-20: #f1f5f9;
+
+  /* Gray Colors */
+  --gray-10: #d9d9d9;
+  --gray-30: #a1a1a1;
+
+  /* Other Brand Colors */
+  --brand-green: #0caf8f;
+  --brand-blue: #243a77;
+  --brand-green-light: #5f8368;
+
+  /* Additional Colors */
+  --white: #ffffff;
+  --black: #000000;
+
+  /* Typography - Heading Styles */
+  --heading1-size: 42px;
+  --heading1-line-height: 50px;
+
+  --heading2-size: 32px;
+  --heading2-line-height: 38px;
+
+  --heading3-size: 24px;
+  --heading3-line-height: 28px;
+
+  --heading4-size: 20px;
+  --heading4-line-height: 25px;
+
+  --heading5-size: 16px;
+  --heading5-line-height: 25px;
+
+  /* Typography - Body Styles */
+  --body-size: 16px;
+  --body-line-height: 25px;
+
+  /* Typography - Caption Styles */
+  --caption-size: 14px;
+  --caption-line-height: 20px;
+
+  /* Typography - Caption 2 Styles */
+  --caption2-size: 12px;
+  --caption2-line-height: auto;
+
+  /* Font Weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* Typography Classes */
+.heading1 {
+  font-size: var(--heading1-size);
+  line-height: var(--heading1-line-height);
+}
+
+.heading2 {
+  font-size: var(--heading2-size);
+  line-height: var(--heading2-line-height);
+}
+
+.heading3 {
+  font-size: var(--heading3-size);
+  line-height: var(--heading3-line-height);
+}
+
+.heading4 {
+  font-size: var(--heading4-size);
+  line-height: var(--heading4-line-height);
+}
+
+.heading5 {
+  font-size: var(--heading5-size);
+  line-height: var(--heading5-line-height);
+}
+
+.body-text {
+  font-size: var(--body-size);
+  line-height: var(--body-line-height);
+}
+
+.caption {
+  font-size: var(--caption-size);
+  line-height: var(--caption-line-height);
+}
+
+.caption2 {
+  font-size: var(--caption2-size);
+  line-height: var(--caption2-line-height);
+}
+
+/* Font Weight Classes */
+.font-light {
+  font-weight: var(--font-light);
+}
+
+.font-regular {
+  font-weight: var(--font-regular);
+}
+
+.font-medium {
+  font-weight: var(--font-medium);
+}
+
+.font-semibold {
+  font-weight: var(--font-semibold);
+}
+
+.font-bold {
+  font-weight: var(--font-bold);
 }
 
 a {
@@ -33,14 +200,34 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #ffffff;
-  color: #213547;
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: var(--heading1-size);
+  line-height: var(--heading1-line-height);
+}
+
+h2 {
+  font-size: var(--heading2-size);
+  line-height: var(--heading2-line-height);
+}
+
+h3 {
+  font-size: var(--heading3-size);
+  line-height: var(--heading3-line-height);
+}
+
+h4 {
+  font-size: var(--heading4-size);
+  line-height: var(--heading4-line-height);
+}
+
+h5 {
+  font-size: var(--heading5-size);
+  line-height: var(--heading5-line-height);
 }
 
 /* button {
@@ -64,10 +251,75 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: var(--text-primary);
+    background-color: var(--background-primary);
   }
   /* button {
     background-color: #f9f9f9;
   } */
+}
+
+/* Removed @theme inline block as it is not a standard CSS rule */
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(218, 218, 218, 0.5);
+    border-radius: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(223, 223, 223, 0.7);
+  }
 }
