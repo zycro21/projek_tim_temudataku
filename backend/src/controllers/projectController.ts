@@ -98,3 +98,23 @@ export const deleteProjectHandler = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const uploadProjectFileHandler = async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: "No file uploaded" });
+    } else {
+      const filename = req.file.filename;
+      const filePath = `uploads/project-files/${filename}`;
+
+      res.status(200).json({
+        message: "Project file uploaded successfully",
+        filename: filename,
+        file_path: filePath,
+      });
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ message: "Upload failed" });
+  }
+};

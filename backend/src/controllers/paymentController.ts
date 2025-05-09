@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import PaymentModel from "../models/paymentModel"; 
 import pool from "../db"; 
 import axios from "axios"; // Untuk integrasi dengan API Duitku
+import duitkuConfig from "../config/duitkuConfig";
 
 export async function createPayment(
   req: Request,
@@ -34,23 +35,26 @@ export async function createPayment(
 }
 
 // Fungsi untuk memverifikasi pembayaran dengan Duitku
-export async function verifyPayment(
-  req: Request,
-  res: Response
-): Promise<Response> {
+export async function verifyPayment(req: Request, res: Response): Promise<Response> {
   const { transactionId, paymentToken } = req.body;
 
   try {
-    // Melakukan request ke API Duitku untuk memverifikasi status pembayaran
     const verificationResult = await axios.post(
-      "https://api.duitku.com/v1/payment/verify",
+      `${duitkuConfig.baseUrl}/webapi/api/merchant/transactionStatus`, // Endpoint bisa berbeda
       {
-        transactionId,
-        paymentToken,
+        merchantCode: duitkuConfig.merchantCode,
+        paymentId: transactionId,
+        signature: generateSignature(transactionId, duitkuConfig.apiKey!),
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
 
-    if (verificationResult.data.status === "success") {
+    const status = verificationResult.data.statusCode;
+    if (status === "00") {
       await PaymentModel.verifyPayment(transactionId, paymentToken);
       return res.status(200).json({ message: "Payment successful" });
     } else {
