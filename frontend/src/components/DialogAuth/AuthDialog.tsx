@@ -1,3 +1,4 @@
+
 // frontend/src/components/DialogAuth/AuthDialog.tsx
 import { useState, useEffect } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
@@ -169,7 +170,13 @@ export default function AuthDialog({ isOpen, onClose, type, onSwitchType }: Auth
         </div>
 
         {/* Right Side - Form */}
-        <div className="w-full lg:w-1/2 px-4 sm:px-8 md:px-12 lg:px-16 py-6 md:py-8 flex flex-col overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div 
+          className="w-full lg:w-1/2 px-4 sm:px-8 md:px-12 lg:px-16 py-6 md:py-8 flex flex-col overflow-y-auto custom-scrollbar"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#C4C4C4FF #f1f1f1'
+          }}
+        >
           {/* Header - Centered */}
           <div className="text-center mb-6 md:mb-10">
             <h1 className="text-[#0E1115] text-2xl md:text-3xl lg:text-4xl font-semibold leading-tight">
@@ -179,13 +186,6 @@ export default function AuthDialog({ isOpen, onClose, type, onSwitchType }: Auth
               Lorem ipsum is simply like this
             </p>
           </div>
-
-          {/* Error Message - Hidden because now we use toast */}
-          {/* error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-md">
-              {error}
-            </div>
-          ) */}
 
           {/* Form */}
           <div className="flex flex-col">

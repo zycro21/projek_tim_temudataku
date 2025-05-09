@@ -1,14 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
   HomeIcon,
+  UserIcon,
+  UserGroupIcon,
+  ShieldCheckIcon,
   CalendarIcon,
-  DocumentDuplicateIcon,
-  ChatBubbleLeftRightIcon,
-  BookOpenIcon,
-  AcademicCapIcon,
-  DocumentTextIcon,
+  BeakerIcon,
   CreditCardIcon,
-  EnvelopeIcon,
+  ShoppingBagIcon,
   QuestionMarkCircleIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
@@ -26,47 +25,42 @@ const Sidebar = () => {
     {
       name: 'Overview',
       icon: <HomeIcon className="w-6 h-6" />,
-      path: '/dashboard'
+      path: '/dashboard-admin'
     },
     {
-      name: 'Jadwal',
+      name: 'Mentee',
+      icon: <UserIcon className="w-6 h-6" />,
+      path: '/dashboard-admin/mentee'
+    },
+    {
+      name: 'Mentor',
+      icon: <UserGroupIcon className="w-6 h-6" />,
+      path: '/dashboard-admin/mentor'
+    },
+    {
+      name: 'Admin',
+      icon: <ShieldCheckIcon className="w-6 h-6" />,
+      path: '/dashboard-admin/admin'
+    },
+    {
+      name: 'Kelola Mentoring',
       icon: <CalendarIcon className="w-6 h-6" />,
-      path: '/dashboard/jadwal'
+      path: '/dashboard-admin/kelola-mentoring'
     },
     {
-      name: 'Pengumpulan',
-      icon: <DocumentDuplicateIcon className="w-6 h-6" />,
-      path: '/dashboard/pengumpulan'
+      name: 'Kelola Practice',
+      icon: <BeakerIcon className="w-6 h-6" />,
+      path: '/dashboard-admin/kelola-practice'
     },
     {
-      name: 'Umpan balik',
-      icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
-      path: '/dashboard/umpan-balik'
-    },
-    {
-      name: 'Materi',
-      icon: <BookOpenIcon className="w-6 h-6" />,
-      path: '/dashboard/materi'
-    },
-    {
-      name: 'Sertifikat',
-      icon: <AcademicCapIcon className="w-6 h-6" />,
-      path: '/dashboard/sertifikat'
-    },
-    {
-      name: 'Practice',
-      icon: <DocumentTextIcon className="w-6 h-6" />,
-      path: '/dashboard/practice'
-    },
-    {
-      name: 'Histori Transaksi',
+      name: 'Transaksi',
       icon: <CreditCardIcon className="w-6 h-6" />,
-      path: '/dashboard/histori-transaksi'
+      path: '/dashboard-admin/transaksi'
     },
     {
-      name: 'Acara',
-      icon: <EnvelopeIcon className="w-6 h-6" />,
-      path: '/dashboard/acara'
+      name: 'Produk & Event',
+      icon: <ShoppingBagIcon className="w-6 h-6" />,
+      path: '/dashboard-admin/produk-event'
     },
   ];
 
@@ -74,7 +68,7 @@ const Sidebar = () => {
     {
       name: 'Butuh bantuan?',
       icon: <QuestionMarkCircleIcon className="w-6 h-6" />,
-      path: '/dashboard/bantuan'
+      path: '/dashboard-admin/bantuan'
     },
     {
       name: 'Logout',
@@ -88,7 +82,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-60 bg-white h-screen flex flex-col shadow-sm">
+    <div className="w-60 bg-background-primary h-screen flex flex-col shadow-sm">
       {/* Logo */}
       <div className="p-4 flex items-center justify-center">
         <img src="/img/Auth/ic_logo.png" alt="TemuDataku Logo" className="h-15" />
@@ -104,7 +98,7 @@ const Sidebar = () => {
                 className={`flex items-center px-4 py-3 rounded-md text-sm font-medium gap-3 
                 ${isActive(link.path) 
                   ? 'bg-[#0CAF6F] text-white' 
-                  : 'text-gray-600 hover:bg-gray-100'
+                  : 'text-[#737373] hover:bg-[#F5F5F5]'
                 }`}
               >
                 <span className="flex-shrink-0">{link.icon}</span>
@@ -122,7 +116,7 @@ const Sidebar = () => {
             <li key={link.name}>
               <Link
                 to={link.path}
-                className={`flex items-center px-4 py-3 rounded-md text-sm font-medium text-gray-500 hover:bg-gray-100 gap-3`}
+                className={`flex items-center px-4 py-3 rounded-md text-sm font-medium text-[#737373] hover:bg-[#F5F5F5] gap-3`}
               >
                 <span className="flex-shrink-0">{link.icon}</span>
                 <span>{link.name}</span>

@@ -9,6 +9,8 @@ import ProgramsPage from "./pages/ProgramsPage";
 import ProgramsDetailPage from "./pages/ProgramsDetailPage";
 import DashboardMentee from "./pages/DashboardMentee";
 import EmailVerification from "./pages/EmailVerification";
+import Mentor from "./pages/Mentor";
+import DashboardAdmin from "./pages/DashboardAdmin";
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
       <Routes>
         {/* Dashboard Routes */}
         <Route path="/dashboard/*" element={<DashboardMentee />} />
+        <Route path="/dashboard-admin/*" element={<DashboardAdmin />} />
         
         {/* Auth Routes - tanpa Layout karena memiliki desain sendiri */}
         <Route path="/verify-email" element={<EmailVerification />} />
@@ -33,6 +36,7 @@ function App() {
                 <Route path="/practice/:id" element={<PracticeDetail />} />
                 <Route path="/programs" element={<ProgramsPage />} />
                 <Route path="/programs/:id" element={<ProgramsDetailPage />} />
+                <Route path="/mentor" element={<Mentor />} />
               </Routes>
             </Layout>
           }
