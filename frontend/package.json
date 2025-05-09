@@ -15,8 +15,10 @@
   "dependencies": {
     "@fontsource/inter": "^5.2.5",
     "@tailwindcss/vite": "^4.0.12",
+    "dayjs": "^1.11.13",
     "frontend": "file:",
     "keen-slider": "^6.8.6",
+    "lucide-react": "^0.503.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0",

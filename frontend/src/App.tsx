@@ -7,6 +7,7 @@ import Layout from "./components/Layout"; // Import Layout
 import PracticeDetail from "./pages/PracticeDetail";
 import ProgramsPage from "./pages/ProgramsPage";
 import ProgramsDetailPage from "./pages/ProgramsDetailPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/practice/:id" element={<PracticeDetail />} />
           <Route path="/programs" element={<ProgramsPage />} />
           <Route path="/programs/:id" element={<ProgramsDetailPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
         </Routes>
       </Layout>
     </Router>
