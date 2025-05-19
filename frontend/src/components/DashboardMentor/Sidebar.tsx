@@ -1,13 +1,10 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   HomeIcon,
-  UserIcon,
-  UserGroupIcon,
-  ShieldCheckIcon,
   CalendarIcon,
-  BeakerIcon,
-  CreditCardIcon,
-  ShoppingBagIcon,
+  ClockIcon,
+  ChatBubbleLeftRightIcon,
+  DocumentTextIcon,
   QuestionMarkCircleIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
@@ -71,42 +68,27 @@ const Sidebar = () => {
     {
       name: 'Overview',
       icon: <HomeIcon className="w-6 h-6" />,
-      path: '/dashboard-admin'
+      path: '/dashboard-mentor'
     },
     {
-      name: 'Mentee',
-      icon: <UserIcon className="w-6 h-6" />,
-      path: '/dashboard-admin/mentee'
-    },
-    {
-      name: 'Mentor',
-      icon: <UserGroupIcon className="w-6 h-6" />,
-      path: '/dashboard-admin/mentor'
-    },
-    {
-      name: 'Admin',
-      icon: <ShieldCheckIcon className="w-6 h-6" />,
-      path: '/dashboard-admin/admin'
-    },
-    {
-      name: 'Kelola Mentoring',
+      name: 'Schedule',
       icon: <CalendarIcon className="w-6 h-6" />,
-      path: '/dashboard-admin/kelola-mentoring'
+      path: '/dashboard-mentor/schedule'
     },
     {
-      name: 'Kelola Practice',
-      icon: <BeakerIcon className="w-6 h-6" />,
-      path: '/dashboard-admin/kelola-practice'
+      name: 'Session Services',
+      icon: <ClockIcon className="w-6 h-6" />,
+      path: '/dashboard-mentor/session-services'
     },
     {
-      name: 'Transaksi',
-      icon: <CreditCardIcon className="w-6 h-6" />,
-      path: '/dashboard-admin/transaksi'
+      name: 'Mentor Report',
+      icon: <DocumentTextIcon className="w-6 h-6" />,
+      path: '/dashboard-mentor/mentor-report'
     },
     {
-      name: 'Produk & Event',
-      icon: <ShoppingBagIcon className="w-6 h-6" />,
-      path: '/dashboard-admin/produk-event'
+      name: 'Mentee Feedback',
+      icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />,
+      path: '/dashboard-mentor/mentee-feedback'
     },
   ];
 
@@ -114,7 +96,7 @@ const Sidebar = () => {
     {
       name: 'Butuh bantuan?',
       icon: <QuestionMarkCircleIcon className="w-6 h-6" />,
-      path: '/dashboard-admin/bantuan'
+      path: '/dashboard-mentor/bantuan'
     },
     {
       name: isLoggingOut ? 'Logging out...' : 'Logout',

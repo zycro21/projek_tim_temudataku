@@ -8,6 +8,7 @@ interface ProtectedRouteProps {
   children?: ReactNode;
   redirectPath?: string;
   requireAuth?: boolean; // true untuk rute yang memerlukan autentikasi, false untuk rute yang hanya bisa diakses jika TIDAK autentikasi
+  requiredRoles?: string[]; // array peran yang diizinkan untuk mengakses rute ini
 }
 
 // Komponen middleware untuk mengontrol akses ke rute tertentu
@@ -15,8 +16,9 @@ const ProtectedRoute = ({
   children,
   redirectPath = "/",
   requireAuth = true,
+  requiredRoles = [],
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   
   // Tampilkan loading state jika sedang mengecek autentikasi
   if (isLoading) {
@@ -31,6 +33,17 @@ const ProtectedRoute = ({
   if (requireAuth && !isAuthenticated) {
     toast.error("Anda harus login terlebih dahulu");
     return <Navigate to={redirectPath} replace />;
+  }
+
+  // Memeriksa apakah user memiliki peran yang diperlukan
+  if (requireAuth && isAuthenticated && requiredRoles.length > 0) {
+    const userRoles = user?.roles || [];
+    const hasRequiredRole = requiredRoles.some(role => userRoles.includes(role));
+    
+    if (!hasRequiredRole) {
+      toast.error("Anda tidak memiliki izin untuk mengakses halaman ini");
+      return <Navigate to="/" replace />;
+    }
   }
 
   // Jika requireAuth false, tapi terautentikasi, redirect ke redirectPath (misal, login page seharusnya tidak bisa diakses jika sudah login)
