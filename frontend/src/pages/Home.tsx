@@ -21,7 +21,6 @@ function Home() {
   const [isAuth, setIsAuth] = useState(false);
   const navigate = useNavigate();
 
-  // Mendengarkan perubahan isAuthenticated dan mengecek roles
   useEffect(() => {
     setIsAuth(isAuthenticated);
     
@@ -75,7 +74,6 @@ function Home() {
 
   return (
     <Layout>
-      {/* Tampilkan DashboardNavbar jika user sudah login sebagai MENTEE, Navbar jika belum login */}
       {isAuth ? <DashboardNavbar /> : <Navbar />}
       
       <main>
