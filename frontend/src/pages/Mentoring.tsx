@@ -3,6 +3,8 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import { useState } from "react";
+import MentorModal from "../components/MentorModal";
 
 export default function Mentoring() {
   const alumni = [
@@ -37,6 +39,9 @@ export default function Mentoring() {
         "Aku jadi lebih ngerti konsep data science dengan mentor di sini.",
     },
   ];
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -267,7 +272,10 @@ export default function Mentoring() {
                     <li>✅ Garansi kepuasan*</li>
                     <li>✅ Dapatkan akses ke praktik data science**</li>
                   </ul>
-                  <button className="mt-4 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition">
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="mt-4 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg transition"
+                  >
                     Ikuti Sesi
                   </button>
                 </div>
@@ -534,6 +542,11 @@ export default function Mentoring() {
             </div>
           </div>
         </section>
+
+        <MentorModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
       </main>
       <Footer />
     </div>

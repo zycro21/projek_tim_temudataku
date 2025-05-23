@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import path from "path"; // ✅ Tambahkan import path
 
 // Import dari struktur KEDUA (main)
 import bookingRoutes from "./routes/bookingRoutes";
@@ -35,8 +36,8 @@ const app: Express = express();
 app.use(helmet());
 app.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 menit
-    max: 100, // limit setiap IP ke 100 request per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     standardHeaders: true,
     legacyHeaders: false,
   })
@@ -47,6 +48,9 @@ app.use(cors);
 app.use(cookieParser());
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
+
+// ✅ Serve static files from uploads folder
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Logging di development
 if (process.env.NODE_ENV === "development") {
@@ -95,7 +99,6 @@ app.all("*", (req: Request, res: Response) => {
 // Global error handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error("Error:", err);
-
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
 
   res.status(statusCode).json({

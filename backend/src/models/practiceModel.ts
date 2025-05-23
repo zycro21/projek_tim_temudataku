@@ -10,11 +10,21 @@ export const createPractice = async (data: {
   practice_type?: string;
   category?: string;
   tags?: object;
+  benefits?: string;
+  tools_used?: string;
+  challenges?: string;
+  expected_outcomes?: string;
+  estimated_duration?: string;
+  target_audience?: string;
 }) => {
   const result = await pool.query(
     `INSERT INTO "practices" 
-     ("mentor_id", "title", "description", "thumbnail_image", "price", "practice_type", "category", "tags") 
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+     (
+       "mentor_id", "title", "description", "thumbnail_image", "price",
+       "practice_type", "category", "tags", "benefits", "tools_used",
+       "challenges", "expected_outcomes", "estimated_duration", "target_audience"
+     ) 
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
      RETURNING *`,
     [
       data.mentor_id,
@@ -25,10 +35,17 @@ export const createPractice = async (data: {
       data.practice_type || null,
       data.category || null,
       data.tags ? JSON.stringify(data.tags) : null,
+      data.benefits || null,
+      data.tools_used || null,
+      data.challenges || null,
+      data.expected_outcomes || null,
+      data.estimated_duration || null,
+      data.target_audience || null,
     ]
   );
   return result.rows[0];
 };
+
 
 // Update Practice
 export const updatePractice = async (
@@ -41,6 +58,12 @@ export const updatePractice = async (
     practice_type: string;
     category: string;
     tags: object;
+    benefits: string;
+    tools_used: string;
+    challenges: string;
+    expected_outcomes: string;
+    estimated_duration: string;
+    target_audience: string;
   }>
 ) => {
   const fields: string[] = [];
@@ -52,7 +75,7 @@ export const updatePractice = async (
       fields.push(`"${key}" = $${count}`);
       values.push(
         key === "tags"
-          ? (JSON.stringify(value) as string)
+          ? JSON.stringify(value)
           : (value as string | number | boolean | null)
       );
       count++;
@@ -70,6 +93,7 @@ export const updatePractice = async (
   const result = await pool.query(query, values);
   return result.rows[0];
 };
+
 
 // Aktif / Nonaktif
 export const togglePracticeStatus = async (id: number) => {

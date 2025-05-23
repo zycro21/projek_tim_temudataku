@@ -1,22 +1,22 @@
 import { Request, Response } from "express";
 import practiceFileModel from "../models/practiceFileModel";
-import formidable from "formidable";
-import { File as FormidableFile } from "formidable"; // penting!
-import path from "path";
 import { IncomingForm } from "formidable";
+import path from "path";
 import fs from "fs";
 
 // Upload file ke dalam material
 export const uploadFile = async (req: Request, res: Response) => {
-  const uploadPath = path.join(__dirname, "../uploads");
+  // Tentukan path penyimpanan untuk file belajar (Practice Files)
+  const uploadPath = path.join(__dirname, "../../uploads/practice-files");
 
+  // Pastikan folder uploads/practice-files ada
   if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
   }
 
   const form = new IncomingForm({
-    uploadDir: uploadPath,
-    keepExtensions: true,
+    uploadDir: uploadPath, // Tentukan direktori penyimpanan
+    keepExtensions: true, // Menyimpan ekstensi file
   });
 
   form.parse(req, async (err, fields, files) => {
@@ -26,6 +26,7 @@ export const uploadFile = async (req: Request, res: Response) => {
         .json({ message: "Error uploading file", error: err });
     }
 
+    // Ambil file yang diupload
     let file = files.file;
 
     if (!file) {
@@ -33,17 +34,19 @@ export const uploadFile = async (req: Request, res: Response) => {
     }
 
     // Ubah ke single file jika array
-    const uploadedFile: FormidableFile = Array.isArray(file) ? file[0] : file;
+    const uploadedFile = Array.isArray(file) ? file[0] : file;
     const { originalFilename, filepath } = uploadedFile;
 
     try {
       const { practice_material_id } = req.params;
+      // Menyimpan data file ke database
       const result = await practiceFileModel.uploadFile(
         Number(practice_material_id),
         originalFilename ?? "untitled",
         filepath
       );
 
+      // Mengirimkan respon setelah file berhasil di-upload
       res
         .status(201)
         .json({ message: "File uploaded successfully", data: result });
