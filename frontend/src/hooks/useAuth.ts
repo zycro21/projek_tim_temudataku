@@ -41,22 +41,35 @@ export const useAuth = (): UseAuthReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load user data from localStorage on component mount
+  // Load user data from localStorage on component mount and when localStorage changes
+  const checkAuth = useCallback(() => {
+    const isAuth = authService.isAuthenticated();
+    setIsAuthenticated(isAuth);
+    
+    if (isAuth) {
+      const userData = authService.getCurrentUser();
+      setUser(userData as User);
+    } else {
+      setUser(null);
+    }
+    
+    setIsLoading(false);
+  }, []);
+  
   useEffect(() => {
-    const checkAuth = () => {
-      const isAuth = authService.isAuthenticated();
-      setIsAuthenticated(isAuth);
-      
-      if (isAuth) {
-        const userData = authService.getCurrentUser();
-        setUser(userData as User);
-      }
-      
-      setIsLoading(false);
+    checkAuth();
+    
+    // Tambahkan event listener untuk mendeteksi perubahan di localStorage
+    const handleStorageChange = () => {
+      checkAuth();
     };
     
-    checkAuth();
-  }, []);
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [checkAuth]);
 
   // Login function
   const login = useCallback(async (credentials: LoginData): Promise<void> => {
@@ -67,8 +80,12 @@ export const useAuth = (): UseAuthReturn => {
       const response = await authService.login(credentials);
       
       if (response.status === 'success' && response.data) {
+        // Update state setelah login berhasil
         setUser(response.data.user);
         setIsAuthenticated(true);
+        
+        // Dispatch event untuk memberi tahu komponen lain bahwa auth status berubah
+        window.dispatchEvent(new Event('auth-change'));
       } else {
         setError(response.message || 'Login failed');
       }
@@ -126,6 +143,9 @@ export const useAuth = (): UseAuthReturn => {
     authService.logout();
     setUser(null);
     setIsAuthenticated(false);
+    
+    // Dispatch event untuk memberi tahu komponen lain bahwa auth status berubah
+    window.dispatchEvent(new Event('auth-change'));
   }, []);
 
   // Clear error

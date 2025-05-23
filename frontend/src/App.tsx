@@ -12,19 +12,48 @@ import DashboardMentee from "./pages/DashboardMentee";
 import EmailVerification from "./pages/EmailVerification";
 import Mentor from "./pages/Mentor";
 import DashboardAdmin from "./pages/DashboardAdmin";
+import DashboardMentor from "./pages/DashboardMentor";
+import ProtectedRoute from "./components/Middleware/ProtectedRoute";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Dashboard Routes */}
-        <Route path="/dashboard/*" element={<DashboardMentee />} />
-        <Route path="/dashboard-admin/*" element={<DashboardAdmin />} />
-
-        {/* Auth Routes */}
+        {/* Protected Dashboard Routes */}
+        <Route path="/dashboard/*" element={
+          <ProtectedRoute
+            requireAuth={true}
+            requiredRoles={["MENTEE"]}
+            redirectPath="/"
+          >
+            <DashboardMentee />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/dashboard-admin/*" element={
+          <ProtectedRoute
+            requireAuth={true}
+            requiredRoles={["ADMIN"]}
+            redirectPath="/"
+          >
+            <DashboardAdmin />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/dashboard-mentor/*" element={
+          <ProtectedRoute
+            requireAuth={true}
+            requiredRoles={["MENTOR"]}
+            redirectPath="/"
+          >
+            <DashboardMentor />
+          </ProtectedRoute>
+        } />
+        
+        {/* Auth Routes - tanpa Layout karena memiliki desain sendiri */}
         <Route path="/verify-email" element={<EmailVerification />} />
         <Route path="/verify-email/:token" element={<EmailVerification />} />
-
+        
         {/* Main Website Routes dibungkus dalam Layout */}
         <Route
           path="*"
@@ -39,6 +68,17 @@ function App() {
                 <Route path="/programs/:id" element={<ProgramsDetailPage />} />
                 <Route path="/mentor" element={<Mentor />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
+                
+                {/* Fallback route untuk halaman yang tidak ditemukan */}
+                <Route path="*" element={
+                  <div className="flex flex-col items-center justify-center min-h-screen py-20">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-4">404 - Halaman Tidak Ditemukan</h1>
+                    <p className="text-gray-600 mb-6">Maaf, halaman yang Anda cari tidak ditemukan.</p>
+                    <a href="/" className="px-6 py-2 bg-[#0CAF6F] text-white rounded-md hover:bg-[#099660] transition">
+                      Kembali ke Beranda
+                    </a>
+                  </div>
+                } />
               </Routes>
             </Layout>
           }
