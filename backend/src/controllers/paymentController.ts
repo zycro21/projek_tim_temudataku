@@ -66,3 +66,7 @@ export async function verifyPayment(req: Request, res: Response): Promise<Respon
     return res.status(500).json({ message: "Payment verification failed" });
   }
 }
+
+function generateSignature(transactionId: any, arg1: string): any {
+  throw new Error("Function not implemented.");
+}
