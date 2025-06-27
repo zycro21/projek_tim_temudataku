@@ -7,6 +7,15 @@ import { BadRequestError } from '../utils/errorTypes';
 import { validateProfileUpdate, validatePasswordChange } from '../validations/userProfileValidation';
 
 /**
+ * Helper function to get base URL from request
+ */
+const getBaseUrl = (req: Request): string => {
+  const protocol = req.protocol;
+  const host = req.get('host');
+  return `${protocol}://${host}`;
+};
+
+/**
  * Get profile of the currently logged in user
  */
 export const getProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -17,7 +26,8 @@ export const getProfile = async (req: Request, res: Response, next: NextFunction
       throw new BadRequestError('User ID not found');
     }
 
-    const profile = await userProfileService.getUserProfile(userId);
+    const baseUrl = getBaseUrl(req);
+    const profile = await userProfileService.getUserProfile(userId, baseUrl);
     formatResponse(res, 'User profile retrieved successfully', profile);
   } catch (error) {
     next(error);
@@ -40,7 +50,8 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       throw new BadRequestError('User ID not found');
     }
 
-    const updatedProfile = await userProfileService.updateUserProfile(userId, value);
+    const baseUrl = getBaseUrl(req);
+    const updatedProfile = await userProfileService.updateUserProfile(userId, value, baseUrl);
     formatResponse(res, 'User profile updated successfully', updatedProfile);
   } catch (error) {
     next(error);
@@ -65,10 +76,11 @@ export const updateProfilePicture = async (req: Request, res: Response, next: Ne
       throw new BadRequestError('User ID not found');
     }
 
-    // Get file path
+    // Get file path and base URL
     const filePath = multerReq.file.path;
+    const baseUrl = getBaseUrl(req);
     
-    const updatedProfile = await userProfileService.updateProfilePicture(userId, filePath);
+    const updatedProfile = await userProfileService.updateProfilePicture(userId, filePath, baseUrl);
     formatResponse(res, 'Profile picture updated successfully', updatedProfile);
   } catch (error) {
     next(error);

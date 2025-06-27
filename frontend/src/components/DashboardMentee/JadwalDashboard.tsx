@@ -50,7 +50,7 @@ const JadwalDashboard: React.FC = () => {
   
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-semibold mb-4">Jadwal</h2>
+      <div className="text-2xl font-semibold mb-4">Jadwal</div>
       <p className="text-[#737373] mb-6">Halaman ini menampilkan jadwal sesi mentoring, bootcamp, dan shortclass Anda, baik yang akan datang maupun yang telah berlangsung.</p>
       
       {/* Stats Cards */}

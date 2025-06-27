@@ -1,214 +1,250 @@
-// frontend/src/components/DashboardAdmin/MentorDashboard.tsx
-import React, { useState } from 'react';
-import MentorStatistics from './Mentor/MentorStatistics';
-import MentorTable from './Mentor/MentorTable';
-import AddMentorModal from './Mentor/AddMentorModal';
-import MentorDetailModal from './Mentor/MentorDetailModal';
-import EditMentorModal from './Mentor/EditMentorModal';
-import { Mentor } from './Mentor/types';
-import useMentorAdmin from '../../hooks/useMentorAdmin';
-import { toast } from 'sonner';
+"use client"
 
-const MentorDashboard: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  
-  // Modal states
-  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
-  
-  // Use the custom hook
-  const {
-    mentorData,
-    selectedMentor,
-    isLoading,
-    currentPage,
-    itemsPerPage,
-    setCurrentPage,
-    setItemsPerPage,
-    selectMentor,
-    addMentor,
-    updateMentor,
-    deleteMentor,
-    toggleMentorStatus
-  } = useMentorAdmin();
+import { useState } from "react"
+import StatsCards from "./Mentor/StatsCards"
+import SearchBar from "./Mentor/SearchBar"
+import MentorTable from "./Mentor/MentorTable"
+import Pagination from "./Mentor/Pagination"
+import ActionButtons from "./Mentor/ActionButtons"
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset to first page when searching
-  };
+interface Mentor {
+  id: string
+  idMentor: string
+  foto: string
+  namaLengkap: string
+  username: string
+  email: string
+  peran: string
+  status: "aktif" | "tidak-aktif"
+}
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
+const mockMentors: Mentor[] = [
+  {
+    id: "1",
+    idMentor: "ABCD01",
+    foto: "https://via.placeholder.com/40x40?text=GD",
+    namaLengkap: "Gilang Dirga",
+    username: "gildir",
+    email: "gilangdirga1@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "2",
+    idMentor: "ABCD02",
+    foto: "https://via.placeholder.com/40x40?text=RS",
+    namaLengkap: "Rina Suryani",
+    username: "rinsury",
+    email: "sarah.connor@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "3",
+    idMentor: "ABCD03",
+    foto: "https://via.placeholder.com/40x40?text=BS",
+    namaLengkap: "Budi Santoso",
+    username: "budsans",
+    email: "john.doe@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "4",
+    idMentor: "ABCD04",
+    foto: "https://via.placeholder.com/40x40?text=NP",
+    namaLengkap: "Nina Pratiwi",
+    username: "nanpa",
+    email: "alice.james@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "5",
+    idMentor: "ABCD05",
+    foto: "https://via.placeholder.com/40x40?text=AW",
+    namaLengkap: "Andi Wijaya",
+    username: "awijaya",
+    email: "bob.marley@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "6",
+    idMentor: "ABCD06",
+    foto: "https://via.placeholder.com/40x40?text=SA",
+    namaLengkap: "Siti Aminah",
+    username: "sitiaminah",
+    email: "jane.smith@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "7",
+    idMentor: "ABCD07",
+    foto: "https://via.placeholder.com/40x40?text=TR",
+    namaLengkap: "Tono Rahardjo",
+    username: "tonojo",
+    email: "michael.brown@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "8",
+    idMentor: "ABCD08",
+    foto: "https://via.placeholder.com/40x40?text=DL",
+    namaLengkap: "Dewi Lestari",
+    username: "dewis",
+    email: "emily.davis@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "9",
+    idMentor: "ABCD09",
+    foto: "https://via.placeholder.com/40x40?text=DL",
+    namaLengkap: "Dewi Lestari",
+    username: "dewis",
+    email: "emily.davis@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+  {
+    id: "10",
+    idMentor: "ABCD10",
+    foto: "https://via.placeholder.com/40x40?text=DL",
+    namaLengkap: "Dewi Lestari",
+    username: "dewis",
+    email: "emily.davis@gmail.com",
+    peran: "Mentor",
+    status: "aktif",
+  },
+]
 
-  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing items per page
-  };
+export default function MentorDashboard() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedMentors, setSelectedMentors] = useState<string[]>([])
+  const [sortField, setSortField] = useState<keyof Mentor | null>(null)
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
+
+  const stats = {
+    totalMentors: 14,
+    weeklyChange: -3, // Negative indicates decrease
+    activeMentors: 14,
+    inactiveMentors: 0,
+  }
+
+  const filteredMentors = mockMentors.filter((mentor) => {
+    const searchLower = searchQuery.toLowerCase()
+    return (
+      mentor.namaLengkap.toLowerCase().includes(searchLower) ||
+      mentor.email.toLowerCase().includes(searchLower) ||
+      mentor.username.toLowerCase().includes(searchLower) ||
+      mentor.peran.toLowerCase().includes(searchLower)
+    )
+  })
+
+  const sortedMentors = [...filteredMentors].sort((a, b) => {
+    if (!sortField) return 0
+
+    let aValue = a[sortField]
+    let bValue = b[sortField]
+
+    if (typeof aValue === "string") {
+      aValue = aValue.toLowerCase()
+      bValue = (bValue as string).toLowerCase()
+    }
+
+    if (aValue < bValue) return sortDirection === "asc" ? -1 : 1
+    if (aValue > bValue) return sortDirection === "asc" ? 1 : -1
+    return 0
+  })
+
+  const totalItems = sortedMentors.length
+  const totalPages = Math.ceil(totalItems / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentMentors = sortedMentors.slice(startIndex, endIndex)
+
+  const handleSort = (field: keyof Mentor) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("asc")
+    }
+  }
+
+  const handleSelectMentor = (mentorId: string) => {
+    setSelectedMentors((prev) => (prev.includes(mentorId) ? prev.filter((id) => id !== mentorId) : [...prev, mentorId]))
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedMentors(checked ? currentMentors.map((mentor) => mentor.id) : [])
+  }
 
   const handleExportData = () => {
-    // Implementasi export data
-    toast.info('Fitur export data sedang dalam pengembangan');
-    console.log('Exporting mentor data...');
-  };
+    console.log("Export mentor data")
+    // Handle export functionality
+  }
 
   const handleAddMentor = () => {
-    setIsAddModalOpen(true);
-  };
-  
-  const handleSaveMentor = async (newMentor: Mentor) => {
-    const success = await addMentor(newMentor);
-    if (success) {
-      setIsAddModalOpen(false);
-    }
-  };
-  
-  const handleViewMentorDetails = (mentor: Mentor) => {
-    selectMentor(mentor);
-    setIsDetailModalOpen(true);
-  };
-  
-  const handleEditMentor = () => {
-    setIsDetailModalOpen(false);
-    setIsEditModalOpen(true);
-  };
-  
-  const handleSaveEditedMentor = async (updatedMentor: Mentor) => {
-    const success = await updateMentor(updatedMentor);
-    if (success) {
-      setIsEditModalOpen(false);
-    }
-  };
-  
-  const handleDeleteMentor = async () => {
-    if (selectedMentor) {
-      const success = await deleteMentor(selectedMentor.id);
-      if (success) {
-        setIsDetailModalOpen(false);
-      }
-    }
-  };
-  
-  const handleToggleMentorStatus = async (mentorId: string): Promise<boolean> => {
-    return await toggleMentorStatus(mentorId);
-  };
-  
-  if (isLoading && !mentorData) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
-      </div>
-    );
+    console.log("Add new mentor")
+    // Handle add mentor functionality
   }
-  
-  if (!mentorData) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-gray-600">Gagal memuat data mentor.</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-        >
-          Muat Ulang
-        </button>
-      </div>
-    );
-  }
-  
+
   return (
-    <div className="w-full bg-white p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Mentor</h1>
-          <p className="text-gray-500">Kelola data mentor TemuDataku</p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <div className="text-2xl font-bold text-gray-900">Mentor</div>
+            <p className="text-gray-600">Mentor</p>
+          </div>
+          <ActionButtons onExportData={handleExportData} onAddMentor={handleAddMentor} />
         </div>
-        <div className="flex gap-4">
-          <button 
-            onClick={handleExportData}
-            className="flex items-center px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Export Data
-          </button>
-          <button 
-            onClick={handleAddMentor}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Tambah Mentor
-          </button>
-        </div>
-      </div>
-      
-      {/* Statistics Cards */}
-      <MentorStatistics 
-        totalMentors={mentorData.totalMentors}
-        activeMentors={mentorData.activeMentors}
-        inactiveMentors={mentorData.inactiveMentors}
-        recentlyAdded={mentorData.recentlyAdded}
-      />
-      
-      {/* Mentor Table */}
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-4">Mentor Terdaftar</h2>
-        <div className="mb-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Cari berdasarkan nama, email, keahlian, atau status..."
-              className="w-full sm:w-96 pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+
+        {/* Stats Cards */}
+        <StatsCards stats={stats} />
+
+        {/* Mentor Table Section */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b border-gray-200">
+            <div className="text-lg font-semibold text-gray-900 mb-4">Mentor Terdaftar</div>
+            <SearchBar
               value={searchQuery}
-              onChange={handleSearch}
+              onChange={setSearchQuery}
+              placeholder="Cari berdasarkan nama, email, atau status..."
             />
-            <div className="absolute left-3 top-2.5">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
+          </div>
+
+          <MentorTable
+            mentors={currentMentors}
+            selectedMentors={selectedMentors}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSort={handleSort}
+            onSelectMentor={handleSelectMentor}
+            onSelectAll={handleSelectAll}
+          />
+
+          <div className="p-6 border-t border-gray-200">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={200} // Using 200 as shown in the design
+              itemsPerPage={itemsPerPage}
+              startIndex={startIndex}
+              endIndex={Math.min(endIndex, 200)}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
           </div>
         </div>
-        <MentorTable 
-          mentors={mentorData.mentors}
-          currentPage={currentPage}
-          itemsPerPage={itemsPerPage}
-          searchQuery={searchQuery}
-          onPageChange={handlePageChange}
-          onItemsPerPageChange={handleItemsPerPageChange}
-          onViewMentorDetails={handleViewMentorDetails}
-          onToggleStatus={handleToggleMentorStatus}
-          isLoading={isLoading}
-        />
       </div>
-      
-      {/* Modals */}
-      <AddMentorModal 
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSave={handleSaveMentor}
-      />
-      
-      <MentorDetailModal 
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        mentor={selectedMentor}
-        onEdit={handleEditMentor}
-        onDelete={handleDeleteMentor}
-      />
-      
-      <EditMentorModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        mentor={selectedMentor}
-        onSave={handleSaveEditedMentor}
-      />
     </div>
-  );
-};
-
-export default MentorDashboard;
+  )
+}
