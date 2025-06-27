@@ -99,6 +99,13 @@ model mentoring_services {
   service_type      String?
   max_participants  Int?
   duration_days     Int
+  benefits          String?
+  mechanism         String?
+  syllabus_path     String?
+  tools_used        String?
+  target_audience   String?
+  schedule          String?
+  alumni_portfolio  String?
   is_active         Boolean              @default(true)
   created_at        DateTime             @default(now())
   updated_at        DateTime?
@@ -109,7 +116,6 @@ model mentoring_services {
 
   @@map("mentoring_services")
 }
-
 
 model mentoring_sessions {
   id               Int               @id @default(autoincrement())
@@ -305,24 +311,30 @@ model user_behavior {
 
 
 model practices {
-  id               Int               @id @default(autoincrement())
-  mentor_id        Int
-  title            String
-  description      String?
-  thumbnail_image  String?
-  price            Decimal
-  practice_type    String?           // Example: Data Analyst
-  category         String?
-  tags             Json?             // Tags as JSON
-  is_active        Boolean           @default(true)
-  created_at       DateTime          @default(now())
-  updated_at       DateTime?
+  id                Int               @id @default(autoincrement())
+  mentor_id         Int
+  title             String
+  description       String?
+  thumbnail_image   String?
+  price             Decimal
+  practice_type     String?
+  category          String?
+  tags              Json?
+  benefits          String?
+  tools_used        String?
+  challenges        String?
+  expected_outcomes String?
+  estimated_duration String?
+  target_audience   String?
+  is_active         Boolean           @default(true)
+  created_at        DateTime          @default(now())
+  updated_at        DateTime?
 
-  mentor           mentor_profiles   @relation(fields: [mentor_id], references: [id])
-  materials        practice_materials[]
-  purchases        practice_purchases[]
-  progress         practice_progress[]
-  reviews          practice_reviews[]
+  mentor            mentor_profiles   @relation(fields: [mentor_id], references: [id])
+  materials         practice_materials[]
+  purchases         practice_purchases[]
+  progress          practice_progress[]
+  reviews           practice_reviews[]
 
   @@map("practices")
 }

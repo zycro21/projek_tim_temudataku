@@ -67,3 +67,20 @@ export const getPracticeById = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to fetch practice", error: err });
   }
 };
+
+export const uploadPracticeThumbnailController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const file = req.file;
+
+  if (!file) {
+    res.status(400).json({ message: "No file uploaded" });
+    return;
+  }
+
+  // Simulasi update database atau penyimpanan file
+  res
+    .status(200)
+    .json({ message: "Thumbnail uploaded", filename: file.filename });
+};

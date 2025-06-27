@@ -3,153 +3,10 @@ import Footer from "../components/Footer";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import dummyPractices from "../data/dummyPractices";
+import { dummyAlumniPractices } from "../data/dummyAlumniPractices";
 
 export default function Practice() {
-  const dummyPractices = [
-    {
-      id: 1,
-      title: "Analisis Sentimen Media Sosial Tahun 2025",
-      description: "Dataset berisi 10.000 ulasan pelanggan dari e-commerce",
-      duration: "± 3-5 jam",
-      price: "Rp 500.000",
-      originalPrice: "Rp 550.000",
-      instructor: "Nurmila Fauziyah",
-      level: "Pemula",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-    // Tambahkan hingga total 9 item
-    {
-      id: 2,
-      title: "Klasifikasi Review Produk Kecantikan",
-      description: "Data 5.000 review produk dari berbagai marketplace",
-      duration: "± 2 jam",
-      price: "Rp 350.000",
-      originalPrice: "Rp 400.000",
-      instructor: "Arif Budi",
-      level: "Menengah",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-    {
-      id: 3,
-      title: "Dashboard Penjualan Retail",
-      description: "Latihan membuat dashboard penjualan interaktif",
-      duration: "± 4 jam",
-      price: "Rp 450.000",
-      originalPrice: "Rp 500.000",
-      instructor: "Siti Zahra",
-      level: "Pemula",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-    {
-      id: 4,
-      title: "Prediksi Harga Rumah dengan ML",
-      description: "Dataset 20.000 properti seluruh Indonesia",
-      duration: "± 6 jam",
-      price: "Rp 600.000",
-      originalPrice: "Rp 700.000",
-      instructor: "Bagus Priyo",
-      level: "Menengah",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-    {
-      id: 5,
-      title: "Analisis Data Konsumsi Energi",
-      description: "Analisis tren konsumsi listrik rumah tangga",
-      duration: "± 3 jam",
-      price: "Rp 400.000",
-      originalPrice: "Rp 450.000",
-      instructor: "Rahma Wulandari",
-      level: "Pemula",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-    {
-      id: 6,
-      title: "Clustering Data Pelanggan",
-      description: "Latihan membuat segmentasi pelanggan",
-      duration: "± 4 jam",
-      price: "Rp 500.000",
-      originalPrice: "Rp 550.000",
-      instructor: "Yusuf Maulana",
-      level: "Menengah",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-    {
-      id: 7,
-      title: "Visualisasi Interaktif Data Kesehatan",
-      description: "Visualisasi data penyakit kronis",
-      duration: "± 5 jam",
-      price: "Rp 550.000",
-      originalPrice: "Rp 600.000",
-      instructor: "Dina Lestari",
-      level: "Menengah",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-    {
-      id: 8,
-      title: "Forecasting Permintaan Barang",
-      description: "Time series analisis untuk permintaan barang",
-      duration: "± 3-4 jam",
-      price: "Rp 480.000",
-      originalPrice: "Rp 530.000",
-      instructor: "Fikri Nugraha",
-      level: "Pemula",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-    {
-      id: 9,
-      title: "Rekomendasi Film dengan Machine Learning",
-      description: "Latihan sistem rekomendasi berbasis ML",
-      duration: "± 6 jam",
-      price: "Rp 650.000",
-      originalPrice: "Rp 700.000",
-      instructor: "Laras Nuraini",
-      level: "Menengah",
-      badge: "BEST PRACTICE",
-      image: "/img/Practice_pilih_practice_section_picture1.png",
-    },
-  ];
-
-  const alumni = [
-    {
-      name: "John Drake Lane",
-      status: "Alumni Group Mentoring - Mahasiswa Aktif",
-      img: "/img/Mentoring_alumni_section_picture1.png",
-      avatar: "/img/Mentoring_alumni_section_avatar1.png",
-      testimonial:
-        "Belajar bareng mentor bikin perjalanan data gak kerasa sendirian!",
-    },
-    {
-      name: "Jane Doe",
-      status: "Alumni Group Mentoring - Mahasiswa Aktif",
-      img: "/img/Mentoring_alumni_section_picture2.png",
-      avatar: "/img/Mentoring_alumni_section_avatar2.png",
-      testimonial: "Mentoring di TemuDataku bikin aku makin pede sama skillku!",
-    },
-    {
-      name: "Mario Bros",
-      status: "Alumni Group Mentoring - Mahasiswa Aktif",
-      img: "/img/Mentoring_alumni_section_picture3.png",
-      avatar: "/img/Mentoring_alumni_section_avatar3.png",
-      testimonial: "Sangat membantu untuk persiapan masuk dunia kerja!",
-    },
-    {
-      name: "Lusiana Gomes",
-      status: "Alumni Group Mentoring - Mahasiswa Aktif",
-      img: "/img/Mentoring_alumni_section_picture4.png",
-      avatar: "/img/Mentoring_alumni_section_avatar4.png",
-      testimonial:
-        "Aku jadi lebih ngerti konsep data science dengan mentor di sini.",
-    },
-  ];
-
   const navigate = useNavigate();
 
   const [showAll, setShowAll] = useState(false);
@@ -490,7 +347,7 @@ export default function Practice() {
                 grabCursor={true}
                 loop={true}
               >
-                {alumni.map((item, idx) => (
+                {dummyAlumniPractices.map((item, idx) => (
                   <SwiperSlide key={idx}>
                     <div className="relative group cursor-pointer bg-white rounded-xl shadow-md overflow-hidden transition hover:shadow-lg">
                       {/* Alumni Photo */}

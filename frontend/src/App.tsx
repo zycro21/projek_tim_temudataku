@@ -2,11 +2,12 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Mentoring from "./pages/Mentoring";
-import Practice from "./pages/Practice"; 
+import Practice from "./pages/Practice";
 import Layout from "./components/Layout";
 import PracticeDetail from "./pages/PracticeDetail";
 import ProgramsPage from "./pages/ProgramsPage";
 import ProgramsDetailPage from "./pages/ProgramsDetailPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import DashboardMentee from "./pages/DashboardMentee";
 import EmailVerification from "./pages/EmailVerification";
 import Mentor from "./pages/Mentor";
@@ -38,7 +39,7 @@ function App() {
             <DashboardAdmin />
           </ProtectedRoute>
         } />
-
+        
         <Route path="/dashboard-mentor/*" element={
           <ProtectedRoute
             requireAuth={true}
@@ -53,7 +54,7 @@ function App() {
         <Route path="/verify-email" element={<EmailVerification />} />
         <Route path="/verify-email/:token" element={<EmailVerification />} />
         
-        {/* Main Website Routes */}
+        {/* Main Website Routes dibungkus dalam Layout */}
         <Route
           path="*"
           element={
@@ -66,6 +67,7 @@ function App() {
                 <Route path="/programs" element={<ProgramsPage />} />
                 <Route path="/programs/:id" element={<ProgramsDetailPage />} />
                 <Route path="/mentor" element={<Mentor />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
                 
                 {/* Fallback route untuk halaman yang tidak ditemukan */}
                 <Route path="*" element={
