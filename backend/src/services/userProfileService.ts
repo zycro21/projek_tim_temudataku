@@ -8,9 +8,17 @@ import path from 'path';
 const prisma = new PrismaClient();
 
 /**
+ * Helper function to generate full profile picture URL
+ */
+const generateProfilePictureUrl = (filename: string | null, baseUrl: string): string | null => {
+  if (!filename) return null;
+  return `${baseUrl}/api/static/profile/${filename}`;
+};
+
+/**
  * Get user profile by ID
  */
-export const getUserProfile = async (userId: number) => {
+export const getUserProfile = async (userId: number, baseUrl: string) => {
   const user = await prisma.users.findUnique({
     where: { id: userId },
     select: {
@@ -48,10 +56,12 @@ export const getUserProfile = async (userId: number) => {
     description: ur.role.description
   }));
 
-  // Remove user_roles from the response and add roles
-  const { user_roles, ...userWithoutRoles } = user;
+  // Remove user_roles from the response and add roles with full URL for profile picture
+  const { user_roles, profile_picture, ...userWithoutRoles } = user;
   return {
     ...userWithoutRoles,
+    profile_picture: generateProfilePictureUrl(profile_picture, baseUrl),
+    profile_picture_filename: profile_picture, // Keep original filename if needed
     roles
   };
 };
@@ -59,7 +69,7 @@ export const getUserProfile = async (userId: number) => {
 /**
  * Update user profile
  */
-export const updateUserProfile = async (userId: number, profileData: any) => {
+export const updateUserProfile = async (userId: number, profileData: any, baseUrl: string) => {
   // Check if user exists
   const user = await prisma.users.findUnique({
     where: { id: userId }
@@ -91,13 +101,18 @@ export const updateUserProfile = async (userId: number, profileData: any) => {
     }
   });
 
-  return updatedUser;
+  // Add full URL for profile picture
+  return {
+    ...updatedUser,
+    profile_picture: generateProfilePictureUrl(updatedUser.profile_picture, baseUrl),
+    profile_picture_filename: updatedUser.profile_picture
+  };
 };
 
 /**
  * Update profile picture
  */
-export const updateProfilePicture = async (userId: number, filePath: string) => {
+export const updateProfilePicture = async (userId: number, filePath: string, baseUrl: string) => {
   // Check if user exists
   const user = await prisma.users.findUnique({
     where: { id: userId }
@@ -110,7 +125,7 @@ export const updateProfilePicture = async (userId: number, filePath: string) => 
   // Delete old profile picture if exists
   if (user.profile_picture) {
     try {
-      const oldPath = path.join(__dirname, '../../uploads', user.profile_picture);
+      const oldPath = path.join(__dirname, '../storage/profile', user.profile_picture);
       if (fs.existsSync(oldPath)) {
         fs.unlinkSync(oldPath);
       }
@@ -137,7 +152,12 @@ export const updateProfilePicture = async (userId: number, filePath: string) => 
     }
   });
 
-  return updatedUser;
+  // Return with full URL
+  return {
+    ...updatedUser,
+    profile_picture: generateProfilePictureUrl(updatedUser.profile_picture, baseUrl),
+    profile_picture_filename: updatedUser.profile_picture
+  };
 };
 
 /**

@@ -1,19 +1,43 @@
 // frontend/src/service/userService.ts
 import { apiRequest } from './api';
 
-// Types
+// Types for user profile
+export interface UserRole {
+  name: string;
+  description: string | null;
+}
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  full_name: string;
+  phone_number: string | null;
+  profile_picture: string | null; // Full URL from backend
+  profile_picture_filename?: string | null; // Original filename
+  city: string | null;
+  province: string | null;
+  is_email_verified: boolean;
+  registration_date: string;
+  last_login: string | null;
+  is_active: boolean;
+  roles: UserRole[];
+}
+
+// Types for admin user management
 export interface User {
   id: number;
   email: string;
   full_name: string;
   phone_number: string | null;
+  profile_picture: string | null; // Updated to include full URL
+  profile_picture_filename?: string | null; // Original filename
   city: string | null;
   province: string | null;
   is_active: boolean;
   is_email_verified: boolean;
   registration_date: string;
   last_login: string | null;
-  roles: string[];
+  roles: string[]; // Array of role names
   created_at: string;
   updated_at: string | null;
 }
@@ -24,9 +48,89 @@ export interface UsersResponse {
   data: User[];
 }
 
-// Main user service functions
+export interface UpdateProfileData {
+  full_name: string;
+  phone_number?: string;
+  city?: string;
+  province?: string;
+}
+
+export interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface UserProfileResponse {
+  status: string;
+  message: string;
+  data: UserProfile;
+}
+
+export interface ProfilePictureUploadResponse {
+  status: string;
+  message: string;
+  data: {
+    id: number;
+    email: string;
+    full_name: string;
+    profile_picture: string; // Full URL to access the image
+    profile_picture_filename: string; // Original filename
+  };
+}
+
+export interface PasswordChangeResponse {
+  status: string;
+  message: string;
+}
+
+// User service functions
 const userService = {
-  // Get all users
+  // ===== USER PROFILE MANAGEMENT =====
+  
+  // Get current user profile
+  getCurrentProfile: async (): Promise<UserProfileResponse> => {
+    return apiRequest<UserProfileResponse>({
+      method: 'GET',
+      url: '/user/profile'
+    });
+  },
+
+  // Update current user profile
+  updateProfile: async (profileData: UpdateProfileData): Promise<UserProfileResponse> => {
+    return apiRequest<UserProfileResponse>({
+      method: 'PUT',
+      url: '/user/profile',
+      data: profileData
+    });
+  },
+
+  // Upload profile picture
+  uploadProfilePicture: async (file: File): Promise<ProfilePictureUploadResponse> => {
+    const formData = new FormData();
+    formData.append('profile_picture', file);
+    
+    return apiRequest<ProfilePictureUploadResponse>({
+      method: 'PATCH',
+      url: '/user/profile/picture',
+      data: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+
+  // Change password
+  changePassword: async (passwordData: ChangePasswordData): Promise<PasswordChangeResponse> => {
+    return apiRequest<PasswordChangeResponse>({
+      method: 'PUT',
+      url: '/user/change-password',
+      data: passwordData
+    });
+  },
+
+  // ===== ADMIN USER MANAGEMENT =====
+  
+  // Get all users (admin only)
   getAllUsers: async (): Promise<UsersResponse> => {
     try {
       return await apiRequest<UsersResponse>({
@@ -112,6 +216,64 @@ const userService = {
       console.error("Error filtering new users:", error);
       return [];
     }
+  },
+
+  // ===== PROFILE PICTURE UTILITIES =====
+
+  // Helper function to get profile picture URL
+  getProfilePictureUrl: (profilePicture: string | null): string | null => {
+    if (!profilePicture) return null;
+    
+    // If profile_picture already contains full URL (from new backend response), return as is
+    if (profilePicture.startsWith('http')) {
+      return profilePicture;
+    }
+    
+    // For backward compatibility, construct URL if it's just filename
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    return `${baseUrl}/api/static/profile/${profilePicture}`;
+  },
+
+  // Fetch profile picture directly (useful for caching or validation)
+  fetchProfilePicture: async (filename: string): Promise<Blob> => {
+    const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/static/profile/${filename}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch profile picture: ${response.statusText}`);
+    }
+    
+    return response.blob();
+  },
+
+  // Get profile picture info without downloading
+  getProfilePictureInfo: async (filename: string) => {
+    return apiRequest({
+      method: 'GET',
+      url: `/static/profile/${filename}/info`
+    });
+  },
+
+  // Validate profile picture file before upload
+  validateProfilePicture: (file: File): { isValid: boolean; error?: string } => {
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return {
+        isValid: false,
+        error: 'Only image files (JPEG, PNG, GIF, WebP) are allowed'
+      };
+    }
+
+    // Check file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      return {
+        isValid: false,
+        error: 'File size must be less than 5MB'
+      };
+    }
+
+    return { isValid: true };
   }
 };
 

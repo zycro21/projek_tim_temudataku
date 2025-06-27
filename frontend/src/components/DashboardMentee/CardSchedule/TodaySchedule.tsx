@@ -24,7 +24,7 @@ const TodaySchedule: React.FC<TodayScheduleProps> = ({
 }) => {
   return (
     <div className="bg-white p-4 rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">Hari Ini</h2>
+      <div className="text-xl font-semibold mb-4">Hari Ini</div>
       
       <div className="space-y-4">
         {scheduleItems.length === 0 ? (
@@ -41,7 +41,7 @@ const TodaySchedule: React.FC<TodayScheduleProps> = ({
                     item.type === 'Short Class' ? 'bg-[#EF4444]' : 
                     item.type === 'Mentoring' ? 'bg-[#3B82F6]' : 'bg-[#F59E0B]'
                   }`}></div>
-                  <h3 className="font-medium text-[#0E1115]">{item.title}</h3>
+                  <div className="font-medium text-[#0E1115]">{item.title}</div>
                 </div>
                 <div className="bg-[#E6F7F1] text-[#0CAF6F] text-xs px-2 py-1 rounded">
                   Hari ini

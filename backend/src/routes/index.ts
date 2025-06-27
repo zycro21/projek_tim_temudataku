@@ -9,6 +9,7 @@ import notificationRoutes from "./notificationRoutes";
 import mentorServiceRoutes from "./mentorServiceRoutes";
 import mentorSessionRoutes from "./mentorSessionRoutes";
 import feedbackRoutes from "./feedbackRoutes";
+import staticRoutes from "./staticRoutes";
 // Import routes lain di sini
 
 const router = Router();
@@ -33,7 +34,8 @@ router.use(mentorProfileRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/mentoring-services', mentorServiceRoutes);
 router.use('/mentoring-sessions', mentorSessionRoutes);
-router.use('/feedback', feedbackRoutes); 
+router.use('/feedback', feedbackRoutes);
+router.use('/static', staticRoutes); 
 
 
 export default router;
